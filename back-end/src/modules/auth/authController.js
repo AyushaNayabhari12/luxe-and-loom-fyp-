@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { StatusCodes } from 'http-status-codes';
 import { CLIENT_URL, FROM_EMAIL, SECRET_KEY } from '../../config/index.js';
-import jwt from "jsonwebtoken"
+import jwt from 'jsonwebtoken';
 
 import {
   asyncErrorHandler,
@@ -10,7 +10,6 @@ import {
   sendSuccessResponse,
 } from '../../utils/index.js';
 import { User } from '../user/user.js';
-
 
 // POST /auth/sign-up
 export const signUp = asyncErrorHandler(async (req, res) => {
@@ -113,15 +112,15 @@ export const forgotPassword = asyncErrorHandler(async (req, res) => {
     return;
   }
 
-  const token = jwt.sign({ userId: user._id, role: user.role}, SECRET_KEY, {
+  const token = jwt.sign({ userId: user._id, role: user.role }, SECRET_KEY, {
     expiresIn: 15 * 60, // 15 minutes
   });
 
   const htmlBody = `
-  <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+  <div style="font-family: Arial, sans-serif; line-height: 1.6;">
     <p>Dear ${user.name},</p>
     <p>We received a request to reset your password for your <strong>Luxe and Loom</strong> account. Click the button below to set a new password:</p>
-    <p style="text-align: center;">
+    <p>
       <a href="${CLIENT_URL}/reset-password?token=${token}" 
          style="display: inline-block; padding: 10px 20px; color: white; background-color: #007BFF; text-decoration: none; border-radius: 5px;">
         Reset Password
@@ -151,7 +150,6 @@ export const resetPassword = asyncErrorHandler(async (req, res) => {
   const { password } = req.body;
   const userId = req.userId;
 
-
   if (!password) {
     createError({
       statusCode: StatusCodes.BAD_REQUEST,
@@ -180,7 +178,4 @@ export const resetPassword = asyncErrorHandler(async (req, res) => {
     message: 'Your password has been changed successfully.',
   });
 });
-
-
-
 
