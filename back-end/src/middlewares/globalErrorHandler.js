@@ -13,6 +13,8 @@ const handleError = (error, req, res, next) => {
     message: error.message,
   });
 
+  console.error('Error:', error.stack);
+
   next();
 };
 

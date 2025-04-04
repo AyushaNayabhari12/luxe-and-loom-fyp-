@@ -1,6 +1,8 @@
 import { createContext, useEffect, useState } from 'react';
 import { getRequest } from '../utils/apiHandler.js';
 import { getAuthTokenFromCookie, removeCookie } from '../utils/cookieHandler';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router';
 
 export const AuthContext = createContext({
   currentUser: {},
@@ -15,6 +17,7 @@ export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [authToken, setAuthToken] = useState(authTokenFromCookie);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -47,6 +50,8 @@ export const AuthContextProvider = ({ children }) => {
     removeCookie();
     setCurrentUser(null);
     setAuthToken('');
+    toast.success('Logged out successfully');
+    navigate('/sign-in');
   };
 
   const value = {

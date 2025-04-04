@@ -8,10 +8,12 @@ import handleError from './middlewares/globalErrorHandler.js';
 import { connectDB } from './db/index.js';
 import authRouter from './modules/auth/authRoutes.js';
 import userRouter from './modules/user/userRoutes.js';
+import productRouter from './modules/product/productRoutes.js';
 
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(cors({ origin: '*' }));
 app.use(logger('dev'));
@@ -24,6 +26,7 @@ app.use('/ping', (req, res) => {
 
 app.use('/auth', authRouter);
 app.use('/users', userRouter);
+app.use('/products', productRouter);
 
 app.use(handleError);
 
@@ -40,6 +43,4 @@ connectDB().then(() => {
     console.log(`Listening on port ${PORT}`);
   });
 });
-
-
 

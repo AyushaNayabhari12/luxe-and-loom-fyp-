@@ -1,5 +1,34 @@
 import mongoose from 'mongoose';
 
+const PRODUCT_CATEGORIES = [
+  'Shawl',
+  'Scarf',
+  'Wrap',
+  'Kurti',
+  'Blouse',
+  'Jacket',
+  'Sweater',
+  'Cardigan',
+  'Coat',
+  'Poncho',
+  'Cape',
+  'Dress',
+  'Skirt',
+  'Top',
+  'Tunic',
+  'Dupatta',
+  'Saree',
+  'Lehenga',
+  'Pant',
+  'Palazzo',
+  'Leggings',
+  'Set',
+  'Ethnic Wear',
+  'Winter Wear',
+  'Casual Wear',
+  'Formal Wear',
+];
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -22,8 +51,14 @@ const productSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['Shawl', 'Scarf', 'Wrap'],
+      enum: PRODUCT_CATEGORIES,
       default: 'Shawl',
+    },
+    
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
   },
   {

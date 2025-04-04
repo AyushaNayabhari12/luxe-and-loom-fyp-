@@ -1,5 +1,4 @@
 import React from 'react';
-import { ShoppingBag } from 'lucide-react';
 import Logo from '../shared/Logo';
 
 export function AuthLayout({ children, title, subtitle, isSignUp }) {

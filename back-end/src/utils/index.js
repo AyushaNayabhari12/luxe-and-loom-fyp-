@@ -8,10 +8,6 @@ export const deleteFile = fileName => {
   // __dirname gives whole folderpath
   const directoryPath = path.join(__dirname, `../../public/${fileName}`);
 
-  console.log('Resolved Path:', directoryPath);
-  console.log('Exists:', fs.existsSync(directoryPath));
-
-
   if (fs.existsSync(directoryPath)) {
     console.log('Directory exists. Deleting...');
     fs.unlinkSync(directoryPath);
@@ -23,8 +19,4 @@ export * from './apiResponseHandler.js';
 export * from './asyncErrorHandler.js';
 export * from './createError.js';
 export * from './mail.js';
-
-
-
-
 
