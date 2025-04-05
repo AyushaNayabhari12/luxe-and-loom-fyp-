@@ -151,7 +151,7 @@ export const getAllOrders = asyncErrorHandler(async (req, res) => {
       };
 
   const orders = await Order.find(query)
-    .populate('user', 'name email')
+    .populate('user', 'name email address phoneNum profileImage')
     .populate('orderItems.product', 'name basePrice images');
 
   sendSuccessResponse({
@@ -171,6 +171,7 @@ export const getAllOrderByUserId = asyncErrorHandler(async (req, res) => {
         status: {
           $ne: 'cart',
         },
+        user: userId,
       };
 
   const orders = await Order.find(query)

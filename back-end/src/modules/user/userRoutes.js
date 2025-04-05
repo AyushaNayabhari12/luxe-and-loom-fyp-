@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken } from '../../middlewares/auth.js';
 import {
+  deleteUser,
   getAllUsers,
   getSignedUser,
   getUserById,
@@ -19,7 +20,8 @@ userRouter.route('/me').get(getSignedUser);
 userRouter
   .route('/:id')
   .get(getUserById)
-  .patch(upload.single('profileImageFile'), updateUserById);
+  .patch(upload.single('profileImageFile'), updateUserById)
+  .delete(deleteUser);
 
 export default userRouter;
 

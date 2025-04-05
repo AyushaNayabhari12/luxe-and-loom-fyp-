@@ -27,11 +27,14 @@ const productSchema = new mongoose.Schema(
       enum: PRODUCT_CATEGORIES,
       default: 'Shawl',
     },
-
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {

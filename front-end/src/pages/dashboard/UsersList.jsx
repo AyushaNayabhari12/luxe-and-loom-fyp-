@@ -1,19 +1,26 @@
-import { Alert, Avatar, Input, Typography } from '@material-tailwind/react';
+import {
+  Alert,
+  Avatar,
+  Button,
+  Input,
+  Typography,
+} from '@material-tailwind/react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useState } from 'react';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaTrash } from 'react-icons/fa';
 import { v4 as uuid } from 'uuid';
 import useDebounce from '../../hooks/useDebounce';
-import { getRequest } from '../../utils/apiHandler';
+import { deleteRequest, getRequest } from '../../utils/apiHandler';
 import { formatImageUrl } from '../../utils';
+import { toast } from 'sonner';
 
 const UsersList = () => {
   const [searchText, setSearchText] = useState('');
 
   const debouncedSearchTextValue = useDebounce(searchText, 1000);
 
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isLoading, refetch } = useQuery({
     queryKey: [debouncedSearchTextValue, 'Users'],
     queryFn: async ({ queryKey }) => {
       try {
@@ -32,7 +39,31 @@ const UsersList = () => {
     },
   });
 
-  const TABLE_HEAD = ['User', 'Addresses', 'Phone Number', 'Registered Date'];
+  const deleteUser = async id => {
+    try {
+      const res = await deleteRequest({
+        endpoint: `/users/${id}`,
+      });
+
+      if (res.ok) {
+        refetch()
+        toast.success(res.message);
+        return;
+      }
+
+      toast.error('Unexpected Error Occurred. Please try again later');
+    } catch (e) {
+      toast.error('Unexpected Error Occurred. Please try again later');
+    }
+  };
+
+  const TABLE_HEAD = [
+    'User',
+    'Addresses',
+    'Phone Number',
+    'Registered Date',
+    'Actions',
+  ];
 
   const TABLE_ROWS = users || [];
 
@@ -85,6 +116,7 @@ const UsersList = () => {
                 <tbody>
                   {TABLE_ROWS.map((user, index) => {
                     const {
+                      _id,
                       name,
                       email,
                       address,
@@ -149,6 +181,23 @@ const UsersList = () => {
                             color='blue-gray'
                             className='font-normal'>
                             {format(new Date(createdAt), 'MMMM d, yyyy')}
+                          </Typography>
+                        </td>
+
+                        <td className={classes}>
+                          <Typography
+                            variant='small'
+                            color='blue-gray'
+                            className='font-normal'>
+                            <Button
+                              size='sm'
+                              color='red'
+                              className='p-2'
+                              onClick={() => {
+                                deleteUser(_id);
+                              }}>
+                              <FaTrash className='w-4 h-4' />
+                            </Button>
                           </Typography>
                         </td>
                       </tr>

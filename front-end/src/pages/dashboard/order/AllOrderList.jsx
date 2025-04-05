@@ -1,5 +1,6 @@
 import {
   Alert,
+  Avatar,
   Button,
   Dialog,
   DialogBody,
@@ -14,13 +15,14 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 import { getRequest } from '../../../utils/apiHandler';
 import { v4 as uuid } from 'uuid';
+import { formatImageUrl } from '../../../utils';
 
 const AllOrderList = () => {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
 
-  const TABLE_HEAD = ['Order ID', 'Status', 'Total', 'Date', 'Actions'];
+  const TABLE_HEAD = ['User', 'Order ID', 'Status', 'Total', 'Date', 'Actions'];
 
   const handleOpenDialog = order => {
     setSelectedOrder(order);
@@ -31,9 +33,7 @@ const AllOrderList = () => {
     queryKey: ['all-orders', selectedStatus],
     queryFn: async () => {
       let endpoint = `/orders`;
-
       if (selectedStatus) endpoint += `?status=${selectedStatus}`;
-
       const res = await getRequest({ endpoint });
       return res?.data || [];
     },
@@ -63,7 +63,7 @@ const AllOrderList = () => {
         <Alert>No orders found.</Alert>
       ) : (
         <div className='overflow-auto'>
-          <table className='w-full text-left border border-gray-300'>
+          <table className='w-full table-auto text-left '>
             <thead>
               <tr>
                 {TABLE_HEAD.map(head => (
@@ -83,25 +83,69 @@ const AllOrderList = () => {
 
             <tbody>
               {orders?.map((order, index) => {
+                const { _id, total, status, createdAt, user = {} } = order;
+                const { name, email, profileImage } = user;
+
                 const isLast = index === orders.length - 1;
                 const classes = isLast
                   ? 'p-4'
                   : 'p-4 border-b border-blue-gray-50';
+
                 return (
-                  <tr key={order._id} className={classes}>
-                    <td className='p-4 border-b border-gray-300'>
-                      {order._id}
+                  <tr key={_id}>
+                    <td className={classes}>
+                      <div className='flex items-center gap-3'>
+                        <Avatar
+                          src={formatImageUrl(profileImage)}
+                          alt={name}
+                          size='sm'
+                        />
+                        <div className='flex flex-col'>
+                          <Typography
+                            variant='small'
+                            color='blue-gray'
+                            className='font-normal'>
+                            {name}
+                          </Typography>
+                          <Typography
+                            variant='small'
+                            color='blue-gray'
+                            className='font-normal opacity-70'>
+                            {email}
+                          </Typography>
+                        </div>
+                      </div>
                     </td>
-                    <td className='p-4 border-b border-gray-300 capitalize'>
-                      {order.status}
+
+                    <td className={classes}>
+                      <Typography
+                        variant='small'
+                        className='font-normal opacity-70'>
+                        {_id}
+                      </Typography>
                     </td>
-                    <td className='p-4 border-b border-gray-300'>
-                      NPR {order.total}
+                    <td className={classes}>
+                      <Typography
+                        variant='small'
+                        className='font-normal opacity-70'>
+                        {status}
+                      </Typography>
                     </td>
-                    <td className='p-4 border-b border-gray-300'>
-                      {format(new Date(order.createdAt), 'MMMM d, yyyy')}
+                    <td className={classes}>
+                      <Typography
+                        variant='small'
+                        className='font-normal opacity-70'>
+                        NPR {total}
+                      </Typography>
                     </td>
-                    <td className='p-4 border-b border-gray-300'>
+                    <td className={classes}>
+                      <Typography
+                        variant='small'
+                        className='font-normal opacity-70'>
+                        {format(new Date(createdAt), 'MMMM d, yyyy')}
+                      </Typography>
+                    </td>
+                    <td className={classes}>
                       <Button size='sm' onClick={() => handleOpenDialog(order)}>
                         View Items
                       </Button>
@@ -118,6 +162,31 @@ const AllOrderList = () => {
         <Dialog open={openDialog} handler={setOpenDialog} size='lg'>
           <DialogHeader className='text-black'>Order Invoice</DialogHeader>
           <DialogBody className='text-black'>
+            {/* User Details */}
+            <div className='mb-6'>
+              <Typography variant='h6' className='mb-1'>
+                Customer Info
+              </Typography>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm'>
+                <p>
+                  <strong>Name:</strong> {selectedOrder?.user?.name}
+                </p>
+                <p>
+                  <strong>Email:</strong> {selectedOrder?.user?.email}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {selectedOrder?.user?.phoneNum}
+                </p>
+                <p>
+                  <strong>Address:</strong> {selectedOrder?.user?.address}
+                </p>
+                <p>
+                  <strong>Delivery Address:</strong>{' '}
+                  {selectedOrder?.deliveryAddress || 'N/A'}
+                </p>
+              </div>
+            </div>
+
             <table className='w-full text-left border border-gray-300'>
               <thead>
                 <tr>

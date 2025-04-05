@@ -5,69 +5,59 @@ import {
   RefreshCw,
   Ruler,
   Scissors,
-  Star,
 } from 'lucide-react';
 
+import { Link } from 'react-router';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/navigation';
-import { Autoplay, Controller, EffectFade, Navigation } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/react';
+import HeroSecVideo from '../assets/hero-sec-video.mp4';
 import Footer from '../components/shared/Footer';
 import Navbar from '../components/shared/Navbar';
 import TestimonialSlider from '../components/shared/TestimonialSlider';
-import { Link } from 'react-router';
 
 function HomePage() {
-  const HeroSectionSliderImages = [
-    'https://images.unsplash.com/photo-1589810635657-232948472d98?auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1550639525-c97d455acf70?auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&q=80',
-  ];
-
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Hero Section */}
-      <header className='relative h-screen'>
-        <div className='absolute inset-0'>
-          <Swiper
-            modules={[Autoplay, EffectFade]}
-            effect='fade'
-            autoplay={{ delay: 3000 }}
-            loop={true}
-            className='h-full'>
-            {HeroSectionSliderImages.map((image, index) => (
-              <SwiperSlide key={index}>
-                <img
-                  src={image}
-                  alt='Luxury Collection'
-                  className='w-full h-full object-cover'
-                />
-                <div className='absolute inset-0 bg-black/50'></div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+
+      <header className='relative h-screen overflow-hidden'>
+        {/* Video Background */}
+        <div className='absolute inset-0 z-0'>
+          <video
+            className='w-full h-full object-cover'
+            autoPlay
+            loop
+            muted
+            playsInline>
+            <source src={HeroSecVideo} type='video/mp4' />
+            Your browser does not support the video tag.
+          </video>
         </div>
 
-        {/* Navbar */}
-        <Navbar bgTransparent />
+        {/* Overlay */}
+        <div className='absolute inset-0 bg-black/40 z-10' />
 
-        <div className='relative z-10 flex flex-col items-center justify-center h-full text-center px-4'>
-          <h1 className='text-5xl md:text-7xl font-serif text-white mb-6'>
+        {/* Navbar */}
+        <div className='relative z-20'>
+          <Navbar bgTransparent />
+        </div>
+
+        {/* Hero Content */}
+        <div className='relative z-20 flex flex-col items-center justify-center h-full text-center px-4'>
+          <h1 className='text-5xl md:text-7xl font-serif text-white mb-6 drop-shadow-lg'>
             Artisanal Elegance
           </h1>
-          <p className='text-xl text-white mb-8 max-w-2xl'>
+          <p className='text-xl text-white mb-8 max-w-2xl drop-shadow'>
             Discover our collection of premium shawls and bespoke clothing,
             crafted with the finest materials and timeless designs.
           </p>
 
-          <div>
-            <Link to='/shop'>
-              <button className='bg-white text-black px-8 py-3 rounded-full hover:bg-gray-100 transition'>
-                Explore Collection
-              </button>
-            </Link>
-          </div>
+          <Link to='/shop'>
+            <button className='bg-white text-black px-8 py-3 rounded-full hover:bg-gray-100 transition'>
+              Explore Collection
+            </button>
+          </Link>
         </div>
       </header>
 

@@ -53,13 +53,16 @@ export const getAllProducts = asyncErrorHandler(async (req, res) => {
 
   const searchQuery = keyword
     ? {
+        isDeleted: false,
         $or: [
           { name: { $regex: keyword, $options: 'i' } },
           { description: { $regex: keyword, $options: 'i' } },
           { category: { $regex: keyword, $options: 'i' } },
         ],
       }
-    : {};
+    : {
+        isDeleted: false,
+      };
 
   const features = new ApiFeatures(
     Product.find(searchQuery).populate('user', 'name'),
@@ -163,7 +166,9 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
 // DELETE /products/:id
 export const deleteProductById = asyncErrorHandler(async (req, res) => {
   const { id } = req.params;
-  const product = await Product.findByIdAndDelete(id);
+  const product = await Product.findByIdAndUpdate(id, {
+    isDeleted: true,
+  });
 
   if (!product) {
     createError({
@@ -173,13 +178,6 @@ export const deleteProductById = asyncErrorHandler(async (req, res) => {
     });
     return;
   }
-
-  // Delete all product images
-  product.images?.forEach(image => {
-    if (!image.startsWith('https://')) {
-      deleteFile(image);
-    }
-  });
 
   sendSuccessResponse({
     res,

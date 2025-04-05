@@ -11,16 +11,21 @@ import { useState } from 'react';
 import { FaSearch, FaEdit, FaTrash } from 'react-icons/fa';
 import { v4 as uuid } from 'uuid';
 import useDebounce from '../../../hooks/useDebounce';
-import { getRequest } from '../../../utils/apiHandler';
+import { deleteRequest, getRequest } from '../../../utils/apiHandler';
 import { formatImageUrl } from '../../../utils/index';
 import PaginationButtons from '../../../components/shared/PaginationButtons';
 import { Link, useNavigate } from 'react-router';
+import { toast } from 'sonner';
 
 const ProductsList = () => {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTextValue = useDebounce(searchText, 1000);
 
-  const { data: response, isLoading } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: [debouncedSearchTextValue, 'Products'],
     queryFn: async ({ queryKey }) => {
       const [keyword] = queryKey;
@@ -32,6 +37,24 @@ const ProductsList = () => {
   });
 
   const navigate = useNavigate();
+
+  const deleteProduct = async id => {
+    try {
+      const res = await deleteRequest({
+        endpoint: `/products/${id}`,
+      });
+
+      if (res.ok) {
+        toast.success(res.message);
+        refetch();
+        return;
+      }
+
+      toast.error('Unexpected Error Occurred. Please try again later');
+    } catch (e) {
+      toast.error('Unexpected Error Occurred. Please try again later');
+    }
+  };
 
   const TABLE_HEAD = [
     'Product',
@@ -164,7 +187,9 @@ const ProductsList = () => {
                             size='sm'
                             color='red'
                             className='p-2'
-                            onClick={() => console.log('Delete', _id)}>
+                            onClick={() => {
+                              deleteProduct(_id);
+                            }}>
                             <FaTrash className='w-4 h-4' />
                           </Button>
                         </div>

@@ -150,9 +150,8 @@ const CartPage = () => {
 
   const checkoutCart = async () => {
     try {
-
-      if(!deliveryAddress){
-        toast.error("Please enter delivery address")
+      if (!deliveryAddress) {
+        toast.error('Please enter delivery address');
         return;
       }
 
@@ -170,7 +169,7 @@ const CartPage = () => {
         toast.success(
           'Order Placed Successfully. Please check your email for more details.'
         );
-        setOrder(null)
+        setOrder(null);
         return;
       }
 
@@ -246,10 +245,11 @@ const CartPage = () => {
                           className: 'before:content-none after:content-none',
                         }}
                         containerProps={{
-                          className: 'min-w-0',
+                          className: '!min-w-0',
                         }}
                         min={1}
                       />
+
                       <div className='absolute right-1 top-1 flex gap-0.5'>
                         <IconButton
                           size='sm'
