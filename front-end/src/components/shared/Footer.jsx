@@ -27,7 +27,9 @@ const Footer = () => {
               placeholder='Enter your email'
               className='flex-1 px-6 py-3 rounded-full bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-white'
             />
-            <button className='px-8 py-3 rounded-full bg-white text-black hover:bg-gray-200 transition' type='button'>
+            <button
+              className='px-8 py-3 rounded-full bg-white text-black hover:bg-gray-200 transition'
+              type='button'>
               Subscribe
             </button>
           </form>
@@ -75,7 +77,7 @@ const Footer = () => {
             <ul className='space-y-2 text-neutral-400'>
               <li className='flex items-center gap-2'>
                 <Phone size={16} />
-                +1 (555) 123-4567
+                +977 9812345678
               </li>
               <li className='flex items-center gap-2'>
                 <Mail size={16} />
@@ -83,7 +85,7 @@ const Footer = () => {
               </li>
               <li className='flex items-center gap-2'>
                 <MapPin size={16} />
-                123 Fashion Ave, NY 10001
+                Kathmandu Nepal
               </li>
             </ul>
           </div>
