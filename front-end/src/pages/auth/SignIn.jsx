@@ -43,7 +43,12 @@ export function SignIn() {
         toast.success('Login successful');
         createCookie(COOKIE_NAMES.TOKEN, token, 7);
 
-        navigate('/');
+        if (user.role === 'admin') {
+          navigate('/dashboard');
+        } else {
+          navigate('/');
+        }
+
         return;
       }
 

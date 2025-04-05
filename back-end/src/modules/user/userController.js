@@ -45,11 +45,11 @@ export const getUserById = asyncErrorHandler(async (req, res) => {
 // PUT /users/:id
 export const updateUserById = asyncErrorHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, address, phoneNum, profileImage } = req.body;
+  const { name, address, phoneNum, profileImage, deliveryAddress } = req.body;
 
   const newProfileImage = req?.file?.filename;
 
-  if (!name || !address || !phoneNum || !profileImage) {
+  if (!name || !address || !phoneNum || !profileImage || !deliveryAddress) {
     if (newProfileImage) {
       deleteFile(newProfileImage);
     }
@@ -69,6 +69,7 @@ export const updateUserById = asyncErrorHandler(async (req, res) => {
       address,
       phoneNum,
       profileImage: newProfileImage ? newProfileImage : profileImage,
+      deliveryAddress,
     },
     {
       new: true,
@@ -86,6 +87,8 @@ export const updateUserById = asyncErrorHandler(async (req, res) => {
   if (newProfileImage && !profileImage?.startsWith('https://')) {
     deleteFile(profileImage);
   }
+
+  user.password = null;
 
   sendSuccessResponse({
     res,

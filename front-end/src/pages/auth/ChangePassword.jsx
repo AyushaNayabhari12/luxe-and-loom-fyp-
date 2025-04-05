@@ -52,12 +52,12 @@ const ChangePasswordPage = () => {
   };
 
   return (
-    <>
-      <div className='bg-white p-6 rounded-lg px-2 md:px-5 py-5 md:pt-3 h-full'>
-        <h1 className='text-2xl font-bold'>Change Password</h1>
+    <div className='flex items-center justify-center'>
+      <div className='bg-white p-6 rounded-lg px-2 md:px-5 py-5 md:pt-3 h-full w-[400px]'>
+        <h1 className='text-2xl font-bold text-center'>Change Password</h1>
 
         <form onSubmit={handleSubmit}>
-          <div className='w-[40%] my-6 space-y-4'>
+          <div className='w-[100%] my-6 space-y-4'>
             <Input
               size='md'
               label='Old Password'
@@ -89,12 +89,12 @@ const ChangePasswordPage = () => {
             />
           </div>
 
-          <Button size='sm' type='submit' loading={displayLoader}>
+          <Button size='md' type='submit' loading={displayLoader} className='w-full'>
             Change Password
           </Button>
         </form>
       </div>
-    </>
+    </div>
   );
 };
 
