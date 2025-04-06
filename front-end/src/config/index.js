@@ -25,14 +25,7 @@ export const COLORS = [
   'Maroon',
   'Turquoise',
   'Lavender',
-  'Teal',
 ];
 
-export const SIZES = [
-  'Double Extra Large',
-  'Extra Large',
-  'Large',
-  'Medium',
-  'Small',
-];
+export const SIZES = ['Large', 'Medium', 'Small'];
 

@@ -3,7 +3,9 @@ import {
   createProduct,
   deleteProductById,
   getAllProducts,
+  getFeaturedCollection,
   getProductById,
+  getSimilarProducts,
   updateProductById,
 } from './productController.js';
 
@@ -19,9 +21,13 @@ productRouter
 
 productRouter.use(authenticateToken);
 
+productRouter.route('/featured-collection').get(getFeaturedCollection);
+
+productRouter.route('/similar').get(getSimilarProducts);
+
 productRouter
   .route('/:id')
-  .patch(upload.any('images'), updateProductById)
+  .patch(upload.any('newImages'), updateProductById)
   .delete(deleteProductById)
   .get(getProductById);
 

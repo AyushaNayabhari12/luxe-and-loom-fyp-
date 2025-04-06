@@ -10,13 +10,22 @@ import { ApiFeatures } from '../../utils/apiFeature.js';
 
 // POST /products
 export const createProduct = asyncErrorHandler(async (req, res) => {
-  const { name, description, basePrice, stock, category } = req.body;
+  const { name, description, basePrice, stock, category, sizes, colors } =
+    req.body;
 
   const userId = req.userId;
 
   const images = req.files?.map(file => file.filename);
 
-  if (!name || !description || !basePrice || !category || !images?.length) {
+  if (
+    !name ||
+    !description ||
+    !basePrice ||
+    !category ||
+    !images?.length ||
+    !colors?.length ||
+    !sizes?.length
+  ) {
     // Clean up uploaded images if validation fails
     images?.forEach(deleteFile);
 
@@ -37,6 +46,8 @@ export const createProduct = asyncErrorHandler(async (req, res) => {
     category,
     images,
     user: userId,
+    sizes,
+    colors,
   });
 
   sendSuccessResponse({
@@ -49,20 +60,34 @@ export const createProduct = asyncErrorHandler(async (req, res) => {
 
 // GET /products
 export const getAllProducts = asyncErrorHandler(async (req, res) => {
-  const { keyword } = req.query;
+  const { keyword, sizes, colors, price } = req.query;
 
-  const searchQuery = keyword
-    ? {
-        isDeleted: false,
-        $or: [
-          { name: { $regex: keyword, $options: 'i' } },
-          { description: { $regex: keyword, $options: 'i' } },
-          { category: { $regex: keyword, $options: 'i' } },
-        ],
-      }
-    : {
-        isDeleted: false,
-      };
+  const searchQuery = {
+    isDeleted: false,
+  };
+
+  if (keyword) {
+    searchQuery.$or = [
+      { name: { $regex: keyword, $options: 'i' } },
+      { description: { $regex: keyword, $options: 'i' } },
+      { category: { $regex: keyword, $options: 'i' } },
+    ];
+  }
+
+  if (sizes) {
+    const sizeArray = sizes.split(',');
+    searchQuery['sizes'] = { $all: sizeArray };
+  }
+
+  if (colors) {
+    const colorArray = colors.split(',');
+    searchQuery['colors'] = { $all: colorArray };
+  }
+
+  if (price) {
+    const [min, max] = price.split('-').map(Number);
+    searchQuery['basePrice'] = { $gte: min, $lte: max };
+  }
 
   const features = new ApiFeatures(
     Product.find(searchQuery).populate('user', 'name'),
@@ -70,10 +95,8 @@ export const getAllProducts = asyncErrorHandler(async (req, res) => {
   ).paginate();
 
   const products = await features.query;
-
   const pagination = await features.getPaginationInfo();
 
-  // Response
   sendSuccessResponse({
     res,
     data: {
@@ -117,9 +140,12 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
     category,
     images = [],
     deletedImages = [],
+    sizes,
+    colors,
   } = req.body;
 
   const newImages = req.files?.map(file => file.filename) || [];
+
   const finalImages = [...newImages, ...images];
 
   if (!name || !description || !basePrice || !category || !finalImages.length) {
@@ -141,6 +167,8 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
       stock,
       category,
       images: finalImages,
+      sizes,
+      colors,
     },
     { new: true }
   );
@@ -154,7 +182,9 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
     return;
   }
 
-  deletedImages?.forEach(deleteFile);
+  if (deletedImages && deletedImages?.length) {
+    deletedImages?.forEach(deleteFile);
+  }
 
   sendSuccessResponse({
     res,
@@ -182,6 +212,62 @@ export const deleteProductById = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({
     res,
     message: 'Product deleted successfully',
+  });
+});
+
+// GET /products/featured-collection
+export const getFeaturedCollection = asyncErrorHandler(async (req, res) => {
+  const products = await Product.find({
+    isDeleted: false,
+  })
+    .sort({
+      createdAt: -1,
+    })
+    .limit(3);
+
+  sendSuccessResponse({
+    res,
+    data: products,
+    message: 'Featured Collection',
+  });
+});
+
+// GET /products/similar
+export const getSimilarProducts = asyncErrorHandler(async (req, res) => {
+  const { category, currentProduct } = req.query;
+
+  let searchQuery = {
+    isDeleted: false,
+  };
+
+  if (category) {
+    searchQuery = {
+      ...searchQuery,
+      category: {
+        $in: category,
+      },
+    };
+  }
+
+  if (currentProduct) {
+    searchQuery = {
+      ...searchQuery,
+      _id: {
+        $ne: currentProduct,
+      },
+    };
+  }
+
+  const products = await Product.find(searchQuery)
+    .sort({
+      createdAt: -1,
+    })
+    .limit(4);
+
+  sendSuccessResponse({
+    res,
+    data: products,
+    message: 'Similar Products',
   });
 });
 

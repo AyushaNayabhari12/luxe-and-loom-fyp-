@@ -1,12 +1,13 @@
+import { StatusCodes } from 'http-status-codes';
 import {
   asyncErrorHandler,
   createError,
   deleteFile,
   sendSuccessResponse,
 } from '../../utils/index.js';
+
 import { User } from './user.js';
-import { StatusCodes } from 'http-status-codes';
-import { Order } from '../order/order.js';
+import { Order } from '../order/Order.js';
 
 // GET /users
 export const getAllUsers = asyncErrorHandler(async (req, res) => {

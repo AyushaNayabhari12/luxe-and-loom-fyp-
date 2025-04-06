@@ -6,15 +6,23 @@ const PaginationButtons = ({ hasNextPage, hasPrevPage }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get('page')) || 1;
 
+  const searchObj = Object.fromEntries([...searchParams.entries()]);
+
   const next = () => {
     if (hasNextPage) {
-      navigate(`?${page + 1}`);
+      setSearchParams({
+        ...searchObj,
+        page: page + 1,
+      });
     }
   };
 
   const prev = () => {
     if (hasPrevPage) {
-      navigate(`?${page - 1}`);
+      setSearchParams({
+        ...searchObj,
+        page: page - 1,
+      });
     }
   };
 

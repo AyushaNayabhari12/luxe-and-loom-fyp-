@@ -32,6 +32,14 @@ const productSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    sizes: {
+      type: [String],
+      required: true,
+    },
+    colors: {
+      type: [String],
+      required: true,
+    },
     isDeleted: {
       type: Boolean,
       default: false,

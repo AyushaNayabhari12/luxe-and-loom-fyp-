@@ -52,7 +52,7 @@ const ChangePasswordPage = () => {
   };
 
   return (
-    <div className='flex items-center justify-center'>
+    <div className='flex items-center justify-center p-20'>
       <div className='bg-white p-6 rounded-lg px-2 md:px-5 py-5 md:pt-3 h-full w-[400px]'>
         <h1 className='text-2xl font-bold text-center'>Change Password</h1>
 

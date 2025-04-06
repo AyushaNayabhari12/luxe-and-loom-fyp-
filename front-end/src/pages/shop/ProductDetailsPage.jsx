@@ -14,6 +14,7 @@ import {
 } from '@material-tailwind/react';
 import { COLORS, SIZES } from '../../config';
 import { toast } from 'sonner';
+import ProductCard from '../../components/shop/ProductCard';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
@@ -33,7 +34,7 @@ const ProductDetailsPage = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['Users'],
+    queryKey: ['PRODUCT_BY_ID', id],
     queryFn: async ({ queryKey }) => {
       try {
         const [_searchText, _role] = queryKey;
@@ -47,6 +48,24 @@ const ProductDetailsPage = () => {
         return [];
       }
     },
+  });
+
+  const { data: similarProducts } = useQuery({
+    queryKey: ['Similar Products', id, product?.category],
+    queryFn: async () => {
+      try {
+        const category = product.category ?? '';
+
+        const res = await getRequest({
+          endpoint: `/products/similar?category=${category}&currentProduct=${id}`,
+        });
+
+        return res?.data || [];
+      } catch (error) {
+        return [];
+      }
+    },
+    enabled: !!product,
   });
 
   const handleColorToggle = c => {
@@ -125,103 +144,125 @@ const ProductDetailsPage = () => {
     basePrice,
     description,
     stock,
+    category,
     sizes = SIZES,
     colors = COLORS,
   } = product;
 
   return (
-    <div className='grid grid-cols-2 gap-x-20 p-20'>
-      <div>
-        <div className='h-[500px] w-full'>
-          <Carousel className='rounded-xl'>
-            {images?.map((image, index) => (
-              <img
-                key={index}
-                src={formatImageUrl(image)}
-                alt={name}
-                className='h-full w-full object-cover'
-              />
-            ))}
-          </Carousel>
+    <div className='p-20'>
+      <div className='grid grid-cols-2 gap-x-20'>
+        <div>
+          <div className='h-[500px] w-full'>
+            <Carousel className='rounded-xl' autoplay autoplayDelay={2000}>
+              {images?.map((image, index) => (
+                <img
+                  key={index}
+                  src={formatImageUrl(image)}
+                  alt={name}
+                  className='h-full w-full object-cover'
+                />
+              ))}
+            </Carousel>
+          </div>
+        </div>
+
+        <div className='space-y-6'>
+          <h2 className='text-2xl font-semibold'>
+            {name.toUpperCase()}{' '}
+            <span className='text-sm text-gray-500'>({category})</span>
+          </h2>
+
+          <h3 className='text-gray-600'>{description}</h3>
+
+          <p className='text-xl font-bold'>NPR {basePrice}</p>
+
+          {/* Add to cart btn */}
+          {stock < 1 ? (
+            <div>
+              <span className=' bg-red-600 text-white px-3 py-1 text-sm font-semibold rounded-lg'>
+                Out of Stock
+              </span>
+            </div>
+          ) : (
+            <>
+              <Button onClick={handleAddToCart} loading={loading}>
+                Add to Cart
+              </Button>
+
+              <div className='flex gap-x-5 items-center pt-4'>
+                <div className='text-xl'>Size :</div>
+
+                <div>
+                  <Select
+                    label='Select Size'
+                    onChange={handleSizeChange}
+                    value={cartDetails.size}>
+                    {sizes.map((size, index) => (
+                      <Option key={index} value={size}>
+                        {size}
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+
+              <div className='flex gap-x-5 mt-4'>
+                <div className='text-xl'>Color:</div>
+
+                <div>
+                  <p className='mb-2 mt-1'>{cartDetails.color}</p>
+                  <div className='grid grid-cols-6 gap-4'>
+                    {colors.map((color, index) => (
+                      <Tooltip key={index} content={color} placement='top'>
+                        <div
+                          className={`w-6 h-6 rounded border cursor-pointer ${
+                            cartDetails.color === color
+                              ? 'ring-2 ring-black'
+                              : ''
+                          }`}
+                          title={color}
+                          onClick={() => handleColorToggle(color)}
+                          style={{
+                            backgroundColor: color.toLowerCase(),
+                          }}></div>
+                      </Tooltip>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className='flex gap-x-5 items-center pt-4'>
+                <div className='text-xl'>Quantity :</div>
+
+                <div>
+                  <Input
+                    label='Quantity'
+                    type='number'
+                    min={1}
+                    onChange={handleChangeQuantity}
+                    value={cartDetails.quantity}
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      <div className='space-y-6'>
-        <h2 className='text-2xl font-semibold'>{name.toUpperCase()}</h2>
-
-        <h3 className='text-gray-600'>{description}</h3>
-
-        <p className='text-xl font-bold'>NPR {basePrice}</p>
-
-        {/* Add to cart btn */}
-        {stock < 1 ? (
-          <div>
-            <p className='font-bold text-red-500'>Out of Stock</p>
+      {similarProducts && similarProducts?.length !== 0 && (
+        <div className='pt-20 space-y-5'>
+          <h1 className='text-xl font-bold'> Similar Products </h1>
+          <div className='grid grid-cols-4 gap-10 max-w-7xl mx-auto'>
+            {similarProducts?.map(product => (
+              <ProductCard key={product._id} product={product} />
+            ))}
           </div>
-        ) : (
-          <>
-            <Button onClick={handleAddToCart} loading={loading}>
-              Add to Cart
-            </Button>
-
-            <div className='flex gap-x-5 items-center pt-4'>
-              <div className='text-xl'>Size :</div>
-
-              <div>
-                <Select
-                  label='Select Size'
-                  onChange={handleSizeChange}
-                  value={cartDetails.size}>
-                  {sizes.map((size, index) => (
-                    <Option key={index} value={size}>
-                      {size}
-                    </Option>
-                  ))}
-                </Select>
-              </div>
-            </div>
-
-            <div className='flex gap-x-5 mt-4'>
-              <div className='text-xl'>Color:</div>
-
-              <div>
-                <p className='mb-2 mt-1'>{cartDetails.color}</p>
-                <div className='grid grid-cols-6 gap-4'>
-                  {colors.map((color, index) => (
-                    <Tooltip key={index} content={color} placement='top'>
-                      <div
-                        className={`w-6 h-6 rounded border cursor-pointer ${
-                          cartDetails.color === color ? 'ring-2 ring-black' : ''
-                        }`}
-                        title={color}
-                        onClick={() => handleColorToggle(color)}
-                        style={{ backgroundColor: color.toLowerCase() }}></div>
-                    </Tooltip>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className='flex gap-x-5 items-center pt-4'>
-              <div className='text-xl'>Quantity :</div>
-
-              <div>
-                <Input
-                  label='Quantity'
-                  type='number'
-                  min={1}
-                  onChange={handleChangeQuantity}
-                  value={cartDetails.quantity}
-                />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default ProductDetailsPage;
-
 

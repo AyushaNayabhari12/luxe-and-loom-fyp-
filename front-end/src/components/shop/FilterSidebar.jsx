@@ -1,42 +1,76 @@
 import {
-  Typography,
   Accordion,
-  AccordionHeader,
   AccordionBody,
+  AccordionHeader,
   Button,
   Tooltip,
+  Typography,
 } from '@material-tailwind/react';
-import { useState } from 'react';
-import { FiPlus, FiMinus } from 'react-icons/fi';
+import { useEffect, useState } from 'react';
+import { FiMinus, FiPlus } from 'react-icons/fi';
 import { COLORS, SIZES } from '../../config';
+import { useSearchParams } from 'react-router';
 
 const FilterSidebar = () => {
-  const [openAccordion, setOpenAccordion] = useState(1);
-  const [price, setPrice] = useState([1600, 4000]);
+  const [openAccordion, setOpenAccordion] = useState(2);
+
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]);
+  const [price, setPrice] = useState([200, 200000]);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchObj = Object.fromEntries([...searchParams.entries()]);
 
   const toggleAccordion = value => {
     setOpenAccordion(openAccordion === value ? 0 : value);
   };
 
   const handleClearFilters = () => {
-    setPrice([1600, 4000]);
     setSelectedColors([]);
     setSelectedSizes([]);
+    setPrice([200, 200000]);
+
+    setSearchParams({});
   };
 
   const handleColorToggle = color => {
-    setSelectedColors(prev =>
-      prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]
-    );
+    const newColors = selectedColors.includes(color)
+      ? selectedColors.filter(c => c !== color)
+      : [...selectedColors, color];
+    setSelectedColors(newColors);
   };
 
   const handleSizeToggle = size => {
-    setSelectedSizes(prev =>
-      prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
-    );
+    const newSizes = selectedSizes.includes(size)
+      ? selectedSizes.filter(s => s !== size)
+      : [...selectedSizes, size];
+    setSelectedSizes(newSizes);
   };
+
+  const handlePriceChange = _price => {
+    setPrice(_price);
+  };
+
+  const filter = () => {
+    setSearchParams({
+      ...searchObj,
+      price: price.join('-'),
+      colors: selectedColors.join(','),
+      sizes: selectedSizes.join(','),
+    });
+  };
+
+  useEffect(() => {
+    if (searchObj?.colors) {
+      setSelectedColors(searchObj.colors.split(','));
+    }
+    if (searchObj?.sizes) {
+      setSelectedSizes(searchObj.sizes.split(','));
+    }
+    if (searchObj?.price) {
+      setPrice(searchObj.price.split('-').map(Number));
+    }
+  }, [searchParams]);
 
   return (
     <div className='w-full max-w-xs bg-white'>
@@ -57,18 +91,18 @@ const FilterSidebar = () => {
         <div className='flex items-center justify-between'>
           <input
             type='range'
-            min='1600'
-            max='4000'
+            min='200'
+            max='20000'
             value={price[0]}
-            onChange={e => setPrice([+e.target.value, price[1]])}
+            onChange={e => handlePriceChange([+e.target.value, price[1]])}
             className='w-full accent-black'
           />
           <input
             type='range'
-            min='1600'
-            max='4000'
+            min='200'
+            max='20000'
             value={price[1]}
-            onChange={e => setPrice([price[0], +e.target.value])}
+            onChange={e => handlePriceChange([price[0], +e.target.value])}
             className='w-full accent-black'
           />
         </div>
@@ -104,7 +138,6 @@ const FilterSidebar = () => {
               </Tooltip>
             ))}
           </div>
-
           <hr className='my-4' />
         </AccordionBody>
       </Accordion>
@@ -136,7 +169,11 @@ const FilterSidebar = () => {
       </Accordion>
 
       {/* Clear Filter Button */}
-      <div className='mt-6'>
+      <div className='mt-6 space-y-4'>
+        <Button size='sm' color='gray' className='w-full' onClick={filter}>
+          Filter
+        </Button>
+
         <Button
           size='sm'
           color='gray'

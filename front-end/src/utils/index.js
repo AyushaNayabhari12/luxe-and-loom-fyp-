@@ -1,8 +1,6 @@
 import { SERVER_URL } from '../config';
 
 export const formatImageUrl = url => {
-  console.log(typeof url);
-
   if (!url) {
     return;
   }

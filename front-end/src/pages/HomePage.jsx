@@ -15,8 +15,26 @@ import HeroSecVideo from '../assets/hero-sec-video.mp4';
 import Footer from '../components/shared/Footer';
 import Navbar from '../components/shared/Navbar';
 import TestimonialSlider from '../components/shared/TestimonialSlider';
+import { getRequest } from '../utils/apiHandler';
+import { useQuery } from '@tanstack/react-query';
+import ProductCard from '../components/shop/ProductCard';
 
 function HomePage() {
+  const { data: featuredCollection, isLoading } = useQuery({
+    queryKey: ['Featured Products'],
+    queryFn: async () => {
+      try {
+        const res = await getRequest({
+          endpoint: '/products/featured-collection',
+        });
+
+        return res?.data || [];
+      } catch (error) {
+        return [];
+      }
+    },
+  });
+
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Hero Section */}
@@ -101,45 +119,15 @@ function HomePage() {
         <h2 className='text-3xl font-serif text-center mb-12'>
           Featured Collection
         </h2>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto'>
-          {[
-            {
-              image:
-                'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&q=80',
-              name: 'Royal Pashmina Shawl',
-              price: '$299',
-            },
-            {
-              image:
-                'https://images.unsplash.com/photo-1550639525-c97d455acf70?auto=format&fit=crop&q=80',
-              name: 'Embroidered Silk Wrap',
-              price: '$249',
-            },
-            {
-              image:
-                'https://images.unsplash.com/photo-1603251579431-8041402bdeda?auto=format&fit=crop&q=80',
-              name: 'Classic Merino Stole',
-              price: '$189',
-            },
-          ].map((product, index) => (
-            <div key={index} className='group cursor-pointer'>
-              <div className='relative overflow-hidden rounded-2xl shadow-lg'>
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className='w-full h-96 object-cover transition group-hover:scale-105'
-                />
-                <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center'>
-                  <button className='bg-white text-black px-6 py-2 rounded-full transform translate-y-4 group-hover:translate-y-0 transition'>
-                    View Details
-                  </button>
-                </div>
-              </div>
-              <h3 className='text-lg font-medium mt-4'>{product.name}</h3>
-              <p className='text-gray-600'>{product.price}</p>
-            </div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div>Fetching Data .... </div>
+        ) : (
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto'>
+            {featuredCollection?.map(product => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Custom Design Process */}
