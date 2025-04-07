@@ -1,9 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
-import { Order } from './Order.js';
-import { asyncErrorHandler } from '../../utils/asyncErrorHandler.js';
 import { sendSuccessResponse } from '../../utils/apiResponseHandler.js';
+import { asyncErrorHandler } from '../../utils/asyncErrorHandler.js';
 import { createError } from '../../utils/createError.js';
 import { Product } from '../product/product.js';
+import { Order } from './Order.js';
 
 // GET /orders/cart
 export const getCart = asyncErrorHandler(async (req, res) => {
@@ -131,7 +131,7 @@ export const checkout = asyncErrorHandler(async (req, res) => {
     }
   }
 
-  cart.status = 'shipped';
+  cart.status = "checkout"
   cart.deliveryAddress = deliveryAddress;
   cart.notes = notes;
   await cart.save();
@@ -141,16 +141,9 @@ export const checkout = asyncErrorHandler(async (req, res) => {
 
 // GET /orders
 export const getAllOrders = asyncErrorHandler(async (req, res) => {
-  const { status } = req.query;
-  const query = status
-    ? { status }
-    : {
-        status: {
-          $ne: 'cart',
-        },
-      };
-
-  const orders = await Order.find(query)
+  const orders = await Order.find({
+    status: 'checkout',
+  })
     .populate('user', 'name email address phoneNum profileImage')
     .populate('orderItems.product', 'name basePrice images');
 
@@ -164,17 +157,8 @@ export const getAllOrders = asyncErrorHandler(async (req, res) => {
 // GET /orders/user
 export const getAllOrderByUserId = asyncErrorHandler(async (req, res) => {
   const userId = req.params.userId;
-  const { status } = req.query;
-  const query = status
-    ? { status, user: userId }
-    : {
-        status: {
-          $ne: 'cart',
-        },
-        user: userId,
-      };
 
-  const orders = await Order.find(query)
+  const orders = await Order.find({ status: 'checkout', user: userId })
     .populate('user', 'name email')
     .populate('orderItems.product', 'name basePrice images');
 

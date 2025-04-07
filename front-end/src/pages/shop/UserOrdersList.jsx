@@ -17,7 +17,6 @@ import { getRequest } from '../../utils/apiHandler';
 
 const UserOrderList = () => {
   const { currentUser } = useAuthContext();
-  const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -27,10 +26,9 @@ const UserOrderList = () => {
   };
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['user-orders', currentUser?._id, selectedStatus],
+    queryKey: ['user-orders', currentUser?._id],
     queryFn: async () => {
       let endpoint = `/orders/user/${currentUser?._id}`;
-      if (selectedStatus) endpoint += `?status=${selectedStatus}`;
 
       const res = await getRequest({ endpoint });
       return res?.data || [];
@@ -44,18 +42,6 @@ const UserOrderList = () => {
     <div className='bg-white p-20 rounded-lg'>
       <div className='flex flex-col md:flex-row justify-between items-center mb-6 gap-4'>
         <Typography variant='h5'>My Orders</Typography>
-
-        <div className='flex items-center gap-4'>
-          <Select
-            label='Filter by Status'
-            value={selectedStatus}
-            onChange={setSelectedStatus}>
-            <Option value=''>All</Option>
-            <Option value='shipped'>Shipped</Option>
-            <Option value='delivered'>Delivered</Option>
-            <Option value='cancelled'>Cancelled</Option>
-          </Select>
-        </div>
       </div>
 
       {orders?.length === 0 ? (
@@ -66,7 +52,6 @@ const UserOrderList = () => {
             <thead>
               <tr>
                 <th className='p-4 border-b border-gray-300'>Order ID</th>
-                <th className='p-4 border-b border-gray-300'>Status</th>
                 <th className='p-4 border-b border-gray-300'>Total</th>
                 <th className='p-4 border-b border-gray-300'>Date</th>
                 <th className='p-4 border-b border-gray-300'>Action</th>
@@ -76,9 +61,6 @@ const UserOrderList = () => {
               {orders?.map(order => (
                 <tr key={order._id}>
                   <td className='p-4 border-b border-gray-300'>{order._id}</td>
-                  <td className='p-4 border-b border-gray-300 capitalize'>
-                    {order.status}
-                  </td>
                   <td className='p-4 border-b border-gray-300'>
                     NPR {order.total}
                   </td>

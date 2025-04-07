@@ -19,11 +19,9 @@ const Navbar = ({ bgTransparent }) => {
 
           <Link to='/shop'>Shop</Link>
 
-          <Link to='/about'>About Us</Link>
-
-          <Link to='/contact'>Contact</Link>
-
           <Link to='/shop/orders'>Orders</Link>
+
+          <Link to='/about'>About Us</Link>
         </div>
 
         <div className='flex items-center gap-x-4'>

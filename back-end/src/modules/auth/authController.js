@@ -11,6 +11,37 @@ import {
 } from '../../utils/index.js';
 import { User } from '../user/user.js';
 
+const sendUserVerificationEmail = async (userId, name, email) => {
+  if (!userId || !name || !email) return;
+
+  const token = jwt.sign({ userId }, SECRET_KEY, {
+    expiresIn: '24h',
+  });
+
+  const htmlBody = `
+  <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <p>Dear ${name},</p>
+    <p>Thank you for registering with <strong>Luxe and Loom</strong>. To complete your registration and verify your email address, please click the button below:</p>
+    <p>
+      <a href="${CLIENT_URL}/verify-email?token=${token}" 
+         style="display: inline-block; padding: 10px 20px; color: white; background-color: #28a745; text-decoration: none; border-radius: 5px;">
+        Verify Email
+      </a>
+    </p>
+    <p><strong>Note:</strong> This link will expire in 24 hours.</p>
+    <p>If you didn’t register for an account, you can safely ignore this email.</p>
+    <p>Thank you,<br/>The <strong>Luxe and Loom</strong> Team</p>
+  </div>
+`;
+
+  await sendMail({
+    from: FROM_EMAIL,
+    to: email,
+    subject: 'Email Verification Request',
+    html: htmlBody,
+  });
+};
+
 // POST /auth/sign-up
 export const signUp = asyncErrorHandler(async (req, res) => {
   const { name, email, address, phoneNum, password } = req.body;
@@ -43,7 +74,9 @@ export const signUp = asyncErrorHandler(async (req, res) => {
     password,
   });
 
-  await user.save();
+  const _user = await user.save();
+
+  sendUserVerificationEmail(_user?.id, name, email);
 
   sendSuccessResponse({
     res,
@@ -73,6 +106,14 @@ export const signIn = asyncErrorHandler(async (req, res) => {
   if (!isPasswordCorrect) {
     createError({
       message: 'Username or password incorrect',
+      statusCode: StatusCodes.BAD_REQUEST,
+    });
+    return;
+  }
+
+  if (!user?.isVerified) {
+    createError({
+      message: 'User not verified. Please check your email for verification',
       statusCode: StatusCodes.BAD_REQUEST,
     });
     return;
@@ -178,4 +219,61 @@ export const resetPassword = asyncErrorHandler(async (req, res) => {
     message: 'Your password has been changed successfully.',
   });
 });
+
+// PATCH /auth/verify-user
+export const verifyUser = asyncErrorHandler(async (req, res) => {
+  const userId = req.userId;
+
+  const user = await User.findByIdAndUpdate(userId, {
+    isVerified: true,
+  });
+
+  if (!user) {
+    createError({
+      statusCode: 400,
+      message: 'Unable to verify user. Please try again later!',
+    });
+    return;
+  }
+
+  sendSuccessResponse({
+    res,
+    message: 'User verified successfully.',
+  });
+});
+
+// POST /auth/send-verification-email
+export const resendUserVerificationEmail = asyncErrorHandler(
+  async (req, res) => {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      createError({
+        statusCode: StatusCodes.NOT_FOUND,
+        message: 'User not found',
+      });
+
+      return;
+    }
+
+    if (user.isVerified) {
+      createError({
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'User already verified.',
+      });
+
+      return;
+    }
+
+    await sendUserVerificationEmail(user._id, user.name, user.email);
+
+    sendSuccessResponse({
+      res,
+      message:
+        'User verification mail sent successfully. Please check you email.',
+    });
+  }
+);
 

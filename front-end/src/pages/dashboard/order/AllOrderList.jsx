@@ -18,11 +18,10 @@ import { v4 as uuid } from 'uuid';
 import { formatImageUrl } from '../../../utils';
 
 const AllOrderList = () => {
-  const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
 
-  const TABLE_HEAD = ['User', 'Order ID', 'Status', 'Total', 'Date', 'Actions'];
+  const TABLE_HEAD = ['User', 'Order ID', 'Total', 'Date', 'Actions'];
 
   const handleOpenDialog = order => {
     setSelectedOrder(order);
@@ -30,10 +29,9 @@ const AllOrderList = () => {
   };
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['all-orders', selectedStatus],
+    queryKey: ['all-orders'],
     queryFn: async () => {
       let endpoint = `/orders`;
-      if (selectedStatus) endpoint += `?status=${selectedStatus}`;
       const res = await getRequest({ endpoint });
       return res?.data || [];
     },
@@ -45,18 +43,6 @@ const AllOrderList = () => {
     <div className='bg-white p-6 rounded-lg px-2 md:px-5 py-5 md:pt-3'>
       <div className='flex flex-col md:flex-row justify-between items-center mb-6 gap-4'>
         <Typography variant='h5'>All Orders</Typography>
-
-        <div className='flex items-center gap-4'>
-          <Select
-            label='Filter by Status'
-            value={selectedStatus}
-            onChange={setSelectedStatus}>
-            <Option value=''>All</Option>
-            <Option value='shipped'>Shipped</Option>
-            <Option value='delivered'>Delivered</Option>
-            <Option value='cancelled'>Cancelled</Option>
-          </Select>
-        </div>
       </div>
 
       {orders?.length === 0 ? (
@@ -83,7 +69,7 @@ const AllOrderList = () => {
 
             <tbody>
               {orders?.map((order, index) => {
-                const { _id, total, status, createdAt, user = {} } = order;
+                const { _id, total, createdAt, user = {} } = order;
                 const { name, email, profileImage } = user;
 
                 const isLast = index === orders.length - 1;
@@ -122,13 +108,6 @@ const AllOrderList = () => {
                         variant='small'
                         className='font-normal opacity-70'>
                         {_id}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant='small'
-                        className='font-normal opacity-70'>
-                        {status}
                       </Typography>
                     </td>
                     <td className={classes}>

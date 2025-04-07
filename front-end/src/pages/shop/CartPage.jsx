@@ -33,11 +33,9 @@ const CartPage = () => {
   const [cartCheckoutLoading, setCartCheckoutLoading] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['Cart Items'],
+    queryKey: ['Cart Items', currentUser?._id],
     queryFn: async ({ queryKey }) => {
       try {
-        const [_searchText, _role] = queryKey;
-
         const res = await getRequest({
           endpoint: '/orders/cart',
         });
@@ -223,7 +221,7 @@ const CartPage = () => {
                       className='w-28 h-28 object-cover rounded-md'
                     />
                     <div className='flex-1 space-y-2'>
-                      <Typography variant='h6'>HUBA Venom Jacket</Typography>
+                      <Typography variant='h6'>{product.name}</Typography>
                       <Typography className='text-gray-700 font-semibold'></Typography>
 
                       <div className='text-sm text-gray-600'>

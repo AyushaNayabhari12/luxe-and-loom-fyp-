@@ -1,5 +1,4 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { toast } from 'sonner';
 import { getAuthTokenFromCookie } from '../../utils/cookieHandler';
 
 const ProtectedRoutes = () => {
@@ -10,6 +9,7 @@ const ProtectedRoutes = () => {
     '/sign-up',
     '/forgot-password',
     '/reset-password',
+    '/verify-email',
   ];
 
   // Public routes (can be accessed without being logged in)
