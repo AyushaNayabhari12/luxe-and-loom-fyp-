@@ -23,6 +23,7 @@ import Shop from './pages/shop/Shop';
 import UserOrderList from './pages/shop/UserOrdersList';
 import AboutUsPage from './pages/AboutUsPage';
 import UserVerificationPage from './pages/auth/UserVerificationPage';
+import Dashboard from './pages/dashboard/Dashboard';
 
 function App() {
   return (
@@ -39,7 +40,7 @@ function App() {
           <Route path='/' element={<HomePage />} />
 
           <Route path='/dashboard' element={<DashboardLayout />}>
-            <Route index element={<div>Dashboard</div>} />
+            <Route index element={<Dashboard />} />
             <Route path='users' element={<UsersList />} />
 
             <Route path='products'>

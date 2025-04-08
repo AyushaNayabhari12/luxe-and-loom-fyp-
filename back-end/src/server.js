@@ -4,12 +4,13 @@ import fs from 'fs';
 import logger from 'morgan';
 
 import { PORT, STATIC_FOLDER } from './config/index.js';
-import handleError from './middlewares/globalErrorHandler.js';
 import { connectDB } from './db/index.js';
+import handleError from './middlewares/globalErrorHandler.js';
 import authRouter from './modules/auth/authRoutes.js';
-import userRouter from './modules/user/userRoutes.js';
-import productRouter from './modules/product/productRoutes.js';
+import dashboardRouter from './modules/dashboard/dashboardRoutes.js';
 import orderRouter from './modules/order/orderRoutes.js';
+import productRouter from './modules/product/productRoutes.js';
+import userRouter from './modules/user/userRoutes.js';
 
 const app = express();
 
@@ -29,6 +30,8 @@ app.use('/auth', authRouter);
 app.use('/users', userRouter);
 app.use('/products', productRouter);
 app.use('/orders', orderRouter);
+app.use('/dashboard', dashboardRouter);
+
 
 
 app.use(handleError);
@@ -46,5 +49,6 @@ connectDB().then(() => {
     console.log(`Listening on port ${PORT}`);
   });
 });
+
 
 
