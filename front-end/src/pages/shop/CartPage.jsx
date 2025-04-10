@@ -5,11 +5,16 @@ import {
   CardBody,
   IconButton,
   Input,
+  Spinner,
   Textarea,
   Typography,
 } from '@material-tailwind/react';
+import { useQuery } from '@tanstack/react-query';
 import { MinusIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { MdArticle } from 'react-icons/md';
+import { toast } from 'sonner';
+import useAuthContext from '../../hooks/useAuthContext';
 import { formatImageUrl } from '../../utils';
 import {
   deleteRequest,
@@ -17,10 +22,7 @@ import {
   patchRequest,
   postRequest,
 } from '../../utils/apiHandler';
-import { useQuery } from '@tanstack/react-query';
-import useAuthContext from '../../hooks/useAuthContext';
-import { toast } from 'sonner';
-import { MdArticle } from 'react-icons/md';
+import { useKhalti } from '../../khalti/useKhalti';
 
 const CartPage = () => {
   const { currentUser } = useAuthContext();
@@ -30,7 +32,19 @@ const CartPage = () => {
   const [displayNoteTextBox, setDisplayNoteTextBox] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [cartCheckoutLoading, setCartCheckoutLoading] = useState(false);
+
+  const {
+    initiate,
+    initiationError,
+    isLoading: isKhaltiLoading,
+  } = useKhalti({
+    onSuccess: response => {
+      console.error('Payment Success');
+    },
+    onError: error => {
+      console.error('Payment error:', error.message);
+    },
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ['Cart Items', currentUser?._id],
@@ -148,13 +162,6 @@ const CartPage = () => {
 
   const checkoutCart = async () => {
     try {
-      if (!deliveryAddress) {
-        toast.error('Please enter delivery address');
-        return;
-      }
-
-      setCartCheckoutLoading(true);
-
       const res = await postRequest({
         endpoint: '/orders/cart/checkout',
         data: {
@@ -164,18 +171,35 @@ const CartPage = () => {
       });
 
       if (res.ok) {
-        toast.success(
-          'Order Placed Successfully. Please check your email for more details.'
-        );
         setOrder(null);
         return;
       }
-
-      toast.error(res.message || 'An error occurred. Please try again.');
     } catch (err) {
-      toast.error('An error occurred. Please try again.');
-    } finally {
-      setCartCheckoutLoading(false);
+      console.log(err);
+    }
+  };
+
+  const handlePayment = () => {
+    if (!deliveryAddress) {
+      toast.error('Please enter delivery address');
+      return;
+    }
+
+    if (order) {
+      const paymentRequest = {
+        amount: order.total * 100, // Convert NPR to paisa
+        purchase_order_id: `order-${order._id}`,
+        purchase_order_name: `order-${order._id}-${order.user.name}`,
+        customer_info: {
+          name: order.user.name,
+          email: order.user.email,
+          phone: order.user.phoneNumber,
+        },
+        return_url: 'http://localhost:5173',
+        website_url: 'http://localhost:5173',
+      };
+      initiate(paymentRequest);
+      // checkoutCart();
     }
   };
 
@@ -344,13 +368,28 @@ const CartPage = () => {
                   <span>NRP {order?.total}</span>
                 </div>
 
-                <Button
-                  fullWidth
-                  className='bg-gray-900 hover:bg-gray-800'
-                  onClick={checkoutCart}
-                  loading={cartCheckoutLoading}>
-                  Checkout
-                </Button>
+                <div>
+                  {isKhaltiLoading && (
+                    <div className='flex items-center gap-2'>
+                      <Spinner className='h-5 w-5' />
+                      <Typography variant='small' color='blue-gray'>
+                        Processing payment...
+                      </Typography>
+                    </div>
+                  )}
+                  {initiationError && (
+                    <Typography variant='small' color='red'>
+                      Error: {initiationError.message}
+                    </Typography>
+                  )}
+                  <Button
+                    color='purple'
+                    onClick={handlePayment}
+                    disabled={isLoading}
+                    className='w-full'>
+                    Pay Now with Khalti
+                  </Button>
+                </div>
 
                 <div className='text-center text-xs text-gray-500 mt-1'>
                   🔒 Secure Checkout

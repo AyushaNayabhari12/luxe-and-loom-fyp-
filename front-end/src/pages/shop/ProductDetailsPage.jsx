@@ -1,10 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import React, { useState } from 'react';
-import { useParams } from 'react-router';
-import { getRequest, postRequest } from '../../utils/apiHandler';
-import { formatImageUrl } from '../../utils';
 import {
-  Alert,
   Button,
   Carousel,
   Input,
@@ -12,12 +6,20 @@ import {
   Select,
   Tooltip,
 } from '@material-tailwind/react';
-import { COLORS, SIZES } from '../../config';
+import { useQuery } from '@tanstack/react-query';
+import React, { useRef, useState } from 'react';
+import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
+import { useParams } from 'react-router';
 import { toast } from 'sonner';
 import ProductCard from '../../components/shop/ProductCard';
+import { COLORS, SIZES } from '../../config';
+import { formatImageUrl } from '../../utils';
+import { getRequest, postRequest } from '../../utils/apiHandler';
+import TryOn from '../../components/shop/TryOn';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
+  const carouselRef = useRef(null);
 
   const defaultCartDetails = {
     productId: id,
@@ -154,7 +156,39 @@ const ProductDetailsPage = () => {
       <div className='grid grid-cols-2 gap-x-20'>
         <div>
           <div className='h-[500px] w-full'>
-            <Carousel className='rounded-xl' autoplay autoplayDelay={2000}>
+            <Carousel
+              ref={carouselRef}
+              className='rounded-xl relative'
+              autoplay
+              autoplayDelay={2000}
+              prevArrow={() => (
+                <button
+                  className='absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 p-2 rounded-full text-white hover:bg-black/70 transition'
+                  onClick={() => carouselRef.current?.prev()}>
+                  <IoIosArrowBack size={20} />
+                </button>
+              )}
+              nextArrow={() => (
+                <button className='absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 p-2 rounded-full text-white hover:bg-black/70 transition'>
+                  <IoIosArrowForward
+                    size={20}
+                    onClick={() => carouselRef.current?.next()}
+                  />
+                </button>
+              )}
+              navigation={({ setActiveIndex, activeIndex, length }) => (
+                <div className='absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10'>
+                  {new Array(length).fill('').map((_, i) => (
+                    <button
+                      key={i}
+                      className={`h-3 w-3 rounded-full ${
+                        activeIndex === i ? 'bg-black' : 'bg-gray-500'
+                      }`}
+                      onClick={() => setActiveIndex(i)}
+                    />
+                  ))}
+                </div>
+              )}>
               {images?.map((image, index) => (
                 <img
                   key={index}
@@ -176,6 +210,8 @@ const ProductDetailsPage = () => {
           <h3 className='text-gray-600'>{description}</h3>
 
           <p className='text-xl font-bold'>NPR {basePrice}</p>
+
+          <TryOn images={images || []} />
 
           {/* Add to cart btn */}
           {stock < 1 ? (

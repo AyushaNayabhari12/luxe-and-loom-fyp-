@@ -9,9 +9,15 @@ import { Order } from './Order.js';
 export const getCart = asyncErrorHandler(async (req, res) => {
   const userId = req.userId;
 
-  const cart = await Order.findOne({ user: userId, status: 'cart' }).populate({
-    path: 'orderItems.product',
-  });
+  const cart = await Order.findOne({ user: userId, status: 'cart' }).populate([
+    {
+      path: 'orderItems.product',
+    },
+    {
+      path: 'user',
+      select: 'name email phoneNum',
+    },
+  ]);
 
   if (!cart) {
     return sendSuccessResponse({ res, data: null, message: 'Cart is empty' });
@@ -131,7 +137,7 @@ export const checkout = asyncErrorHandler(async (req, res) => {
     }
   }
 
-  cart.status = "checkout"
+  cart.status = 'checkout';
   cart.deliveryAddress = deliveryAddress;
   cart.notes = notes;
   await cart.save();

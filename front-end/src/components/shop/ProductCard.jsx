@@ -10,7 +10,24 @@ const ProductCard = ({ product }) => {
   return (
     <div>
       <div className='h-[300px] w-full relative'>
-        <Carousel className='rounded-xl' autoplay autoplayDelay={2000} loop>
+        <Carousel
+          className='rounded-xl'
+          autoplay
+          autoplayDelay={2000}
+          loop
+          navigation={({ setActiveIndex, activeIndex, length }) => (
+            <div className='absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10'>
+              {new Array(length).fill('').map((_, i) => (
+                <button
+                  key={i}
+                  className={`h-3 w-3 rounded-full ${
+                    activeIndex === i ? 'bg-black' : 'bg-gray-500'
+                  }`}
+                  onClick={() => setActiveIndex(i)}
+                />
+              ))}
+            </div>
+          )}>
           {images?.map((image, index) => (
             <img
               key={index}
