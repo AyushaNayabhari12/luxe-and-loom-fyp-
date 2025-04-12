@@ -46,7 +46,7 @@ const CartPage = () => {
     },
   });
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['Cart Items', currentUser?._id],
     queryFn: async ({ queryKey }) => {
       try {
@@ -149,6 +149,7 @@ const CartPage = () => {
 
       if (isSuccess) {
         toast.success('Cart Items updated');
+        refetch();
         return;
       }
 
@@ -199,7 +200,7 @@ const CartPage = () => {
         website_url: 'http://localhost:5173',
       };
       initiate(paymentRequest);
-      // checkoutCart();
+      checkoutCart();
     }
   };
 
@@ -404,4 +405,5 @@ const CartPage = () => {
 };
 
 export default CartPage;
+
 
