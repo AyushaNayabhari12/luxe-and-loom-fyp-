@@ -1,16 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
-import Draggable from 'react-draggable';
-import useAuthContext from '../../hooks/useAuthContext';
 import {
   Button,
   Dialog,
-  DialogHeader,
   DialogBody,
-  DialogFooter,
+  DialogFooter
 } from '@material-tailwind/react';
+import React, { useEffect, useRef, useState } from 'react';
+import Draggable from 'react-draggable';
+import useAuthContext from '../../hooks/useAuthContext';
 import { formatImageUrl } from '../../utils';
-
-// const shawls = ['/shawl-1.png', '/shawl-2.png', '/shawl-3.png'];
 
 const DraggableWrapper = ({ children }) => {
   const nodeRef = useRef(null);
@@ -138,6 +135,4 @@ const TryOn = ({ images = [] }) => {
 };
 
 export default TryOn;
-
-
 

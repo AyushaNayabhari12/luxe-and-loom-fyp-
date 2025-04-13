@@ -5,12 +5,15 @@ import './App.css';
 import DashboardLayout from './components/dashboard/layout/Layout';
 import ProtectedRoutes from './components/routes-protection/ProtectedRoutes';
 import MainLayout from './components/shared/MainLayout';
+import AboutUsPage from './pages/AboutUsPage';
 import ChangePasswordPage from './pages/auth/ChangePassword';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { ResetPassword } from './pages/auth/ResetPassword';
 import { SignIn } from './pages/auth/SignIn';
 import { SignUp } from './pages/auth/SignUp';
 import UserProfile from './pages/auth/UserProfile';
+import UserVerificationPage from './pages/auth/UserVerificationPage';
+import Dashboard from './pages/dashboard/Dashboard';
 import AllOrderList from './pages/dashboard/order/AllOrderList';
 import ProductForm from './pages/dashboard/product/ProductForm';
 import ProductsList from './pages/dashboard/product/ProductList';
@@ -21,9 +24,7 @@ import CartPage from './pages/shop/CartPage';
 import ProductDetailsPage from './pages/shop/ProductDetailsPage';
 import Shop from './pages/shop/Shop';
 import UserOrderList from './pages/shop/UserOrdersList';
-import AboutUsPage from './pages/AboutUsPage';
-import UserVerificationPage from './pages/auth/UserVerificationPage';
-import Dashboard from './pages/dashboard/Dashboard';
+import PaymentSuccess from './pages/shop/PaymentSuccessPage';
 
 function App() {
   return (
@@ -63,6 +64,8 @@ function App() {
               <Route path='orders' element={<UserOrderList />} />
 
               <Route path='cart' element={<CartPage />} />
+
+              <Route path='checkout' element={<PaymentSuccess />} />
             </Route>
 
             <Route path='*' element={<PageNotFound />} />

@@ -119,7 +119,7 @@ export const removeCartItem = asyncErrorHandler(async (req, res) => {
 export const checkout = asyncErrorHandler(async (req, res) => {
   const userId = req.userId;
 
-  const { deliveryAddress, notes = '' } = req.body;
+  const { transactionId = '' } = req.body;
 
   const cart = await Order.findOne({ user: userId, status: 'cart' });
 
@@ -138,8 +138,8 @@ export const checkout = asyncErrorHandler(async (req, res) => {
   }
 
   cart.status = 'checkout';
-  cart.deliveryAddress = deliveryAddress;
-  cart.notes = notes;
+  cart.transactionId = transactionId;
+
   await cart.save();
 
   sendSuccessResponse({ res, data: cart, message: 'Checkout successful' });
@@ -165,7 +165,7 @@ export const getAllOrderByUserId = asyncErrorHandler(async (req, res) => {
   const userId = req.params.userId;
 
   const orders = await Order.find({ status: 'checkout', user: userId })
-    .populate('user', 'name email')
+    .populate('user', 'name email phoneNum')
     .populate('orderItems.product', 'name basePrice images');
 
   sendSuccessResponse({
@@ -175,10 +175,9 @@ export const getAllOrderByUserId = asyncErrorHandler(async (req, res) => {
   });
 });
 
-// PATCH /orders/:orderId/status
-export const updateOrderStatus = asyncErrorHandler(async (req, res) => {
+// PATCH /orders/:orderId
+export const updateOrder = asyncErrorHandler(async (req, res) => {
   const { orderId } = req.params;
-  const { status } = req.body;
 
   const order = await Order.findById(orderId);
 
@@ -186,7 +185,8 @@ export const updateOrderStatus = asyncErrorHandler(async (req, res) => {
     return createError({ res, statusCode: 404, message: 'Order not found' });
   }
 
-  order.status = status;
+  Object.assign(order, req.body);
+
   await order.save();
 
   sendSuccessResponse({ res, data: order, message: 'Order status updated' });

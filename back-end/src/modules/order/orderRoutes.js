@@ -8,6 +8,7 @@ import {
   getCart,
   removeCartItem,
   updateCartItem,
+  updateOrder,
 } from './orderController.js';
 
 const orderRouter = Router();
@@ -20,13 +21,11 @@ orderRouter.route('/cart').post(addToCart).get(getCart);
 
 orderRouter.route('/cart/checkout').post(checkout);
 
-orderRouter.route('/checkout').post(checkout);
-
 orderRouter.route('/user/:userId').get(getAllOrderByUserId);
 
 orderRouter.route('/cart/:itemId').patch(updateCartItem).delete(removeCartItem);
 
-orderRouter.route('/:orderId/status').patch(checkout);
+orderRouter.route('/:orderId').patch(updateOrder);
 
 export default orderRouter;
 

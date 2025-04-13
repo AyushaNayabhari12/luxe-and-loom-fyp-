@@ -26,6 +26,9 @@ const orderSchema = new mongoose.Schema(
     notes: {
       type: String,
     },
+    transactionId: {
+      type: String,
+    },
   },
   {
     timestamps: true,

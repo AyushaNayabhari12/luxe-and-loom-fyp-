@@ -13,23 +13,28 @@ import { useQuery } from '@tanstack/react-query';
 import { MinusIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { MdArticle } from 'react-icons/md';
+import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import useAuthContext from '../../hooks/useAuthContext';
+import useDebounce from '../../hooks/useDebounce';
+import { useKhalti } from '../../khalti/useKhalti';
 import { formatImageUrl } from '../../utils';
 import {
   deleteRequest,
   getRequest,
   patchRequest,
-  postRequest,
 } from '../../utils/apiHandler';
-import { useKhalti } from '../../khalti/useKhalti';
 
 const CartPage = () => {
   const { currentUser } = useAuthContext();
   const [order, setOrder] = useState(null);
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [notes, setNotes] = useState('');
+  const debouncedNotesValue = useDebounce(notes, 1000);
+  const debouncedDeliveryAddressValue = useDebounce(deliveryAddress, 1000);
+
   const [displayNoteTextBox, setDisplayNoteTextBox] = useState(false);
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
 
@@ -38,10 +43,11 @@ const CartPage = () => {
     initiationError,
     isLoading: isKhaltiLoading,
   } = useKhalti({
-    onSuccess: response => {
-      console.error('Payment Success');
+    onSuccess: () => {
+      navigate('/shop');
     },
     onError: error => {
+      toast.error('Unable to checkout at the moment, please try again later.');
       console.error('Payment error:', error.message);
     },
   });
@@ -161,25 +167,6 @@ const CartPage = () => {
     }
   };
 
-  const checkoutCart = async () => {
-    try {
-      const res = await postRequest({
-        endpoint: '/orders/cart/checkout',
-        data: {
-          notes,
-          deliveryAddress,
-        },
-      });
-
-      if (res.ok) {
-        setOrder(null);
-        return;
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   const handlePayment = () => {
     if (!deliveryAddress) {
       toast.error('Please enter delivery address');
@@ -189,18 +176,31 @@ const CartPage = () => {
     if (order) {
       const paymentRequest = {
         amount: order.total * 100, // Convert NPR to paisa
-        purchase_order_id: `order-${order._id}`,
+        purchase_order_id: order._id,
         purchase_order_name: `order-${order._id}-${order.user.name}`,
         customer_info: {
           name: order.user.name,
           email: order.user.email,
           phone: order.user.phoneNumber,
         },
-        return_url: 'http://localhost:5173',
-        website_url: 'http://localhost:5173',
+        return_url: `${window.location.origin}/shop/checkout`,
+        website_url: window.location.origin,
       };
       initiate(paymentRequest);
-      checkoutCart();
+    }
+  };
+
+  const updateOrder = async () => {
+    try {
+      await patchRequest({
+        endpoint: `/orders/${order._id}`,
+        data: {
+          notes,
+          deliveryAddress,
+        },
+      });
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -211,6 +211,12 @@ const CartPage = () => {
       setDeliveryAddress(currentUser.deliveryAddress);
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    if (debouncedDeliveryAddressValue) {
+      updateOrder();
+    }
+  }, [debouncedNotesValue, debouncedDeliveryAddressValue]);
 
   if (isLoading) {
     return <div className=' bg-gray-100 p-20'>Fetching data...</div>;
@@ -334,6 +340,7 @@ const CartPage = () => {
                 <div className='h-[100px] w-[340px]'>
                   <Textarea
                     label='Extra Notes'
+                    value={notes}
                     onChange={e => setNotes(e.target.value)}
                   />
                 </div>
@@ -405,5 +412,4 @@ const CartPage = () => {
 };
 
 export default CartPage;
-
 

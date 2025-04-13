@@ -17,7 +17,9 @@ export function useKhalti({ onSuccess, onError, autoRedirect = true } = {}) {
         `${KHALTI_CONFIG.baseUrl}/epayment/initiate/`,
         data
       );
+
       const paymentResponse = response.data;
+
       setPidx(paymentResponse.pidx);
 
       if (autoRedirect) {
