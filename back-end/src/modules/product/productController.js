@@ -7,6 +7,7 @@ import {
 import { StatusCodes } from 'http-status-codes';
 import { Product } from './product.js';
 import { ApiFeatures } from '../../utils/apiFeature.js';
+import { logProductView, logSearch } from '../recommendation/utils.js';
 
 // POST /products
 export const createProduct = asyncErrorHandler(async (req, res) => {
@@ -38,7 +39,7 @@ export const createProduct = asyncErrorHandler(async (req, res) => {
     return;
   }
 
-  const product = await Product.create({
+  const product = new Product({
     name,
     description,
     basePrice,
@@ -49,6 +50,8 @@ export const createProduct = asyncErrorHandler(async (req, res) => {
     sizes,
     colors,
   });
+
+  await product.save();
 
   sendSuccessResponse({
     res,
@@ -97,6 +100,8 @@ export const getAllProducts = asyncErrorHandler(async (req, res) => {
   const products = await features.query;
   const pagination = await features.getPaginationInfo();
 
+  logSearch(req.userId, keyword);
+
   sendSuccessResponse({
     res,
     data: {
@@ -121,6 +126,9 @@ export const getProductById = asyncErrorHandler(async (req, res) => {
     });
     return;
   }
+
+  // Log the product view by the user
+  logProductView(req.userId, id);
 
   sendSuccessResponse({
     res,
@@ -158,20 +166,7 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
     return;
   }
 
-  const product = await Product.findByIdAndUpdate(
-    id,
-    {
-      name,
-      description,
-      basePrice,
-      stock,
-      category,
-      images: finalImages,
-      sizes,
-      colors,
-    },
-    { new: true }
-  );
+  const product = await Product.findById(id);
 
   if (!product) {
     createError({
@@ -181,6 +176,19 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
     });
     return;
   }
+
+  Object.assign(product, {
+    name,
+    description,
+    basePrice,
+    stock,
+    category,
+    images: finalImages,
+    sizes,
+    colors,
+  });
+
+  await product.save();
 
   if (deletedImages && deletedImages?.length) {
     deletedImages?.forEach(deleteFile);

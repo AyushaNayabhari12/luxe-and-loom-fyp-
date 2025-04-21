@@ -4,6 +4,9 @@ import { asyncErrorHandler } from '../../utils/asyncErrorHandler.js';
 import { createError } from '../../utils/createError.js';
 import { Product } from '../product/product.js';
 import { Order } from './Order.js';
+import { sendMail } from '../../utils/mail.js';
+import { FROM_EMAIL } from '../../config/index.js';
+import { logOrder } from '../recommendation/utils.js';
 
 // GET /orders/cart
 export const getCart = asyncErrorHandler(async (req, res) => {
@@ -121,7 +124,9 @@ export const checkout = asyncErrorHandler(async (req, res) => {
 
   const { transactionId = '' } = req.body;
 
-  const cart = await Order.findOne({ user: userId, status: 'cart' });
+  const cart = await Order.findOne({ user: userId, status: 'cart' })
+    .populate('user')
+    .populate('orderItems.product');
 
   if (!cart || cart.orderItems.length === 0) {
     return createError({ res, statusCode: 400, message: 'Cart is empty' });
@@ -129,7 +134,9 @@ export const checkout = asyncErrorHandler(async (req, res) => {
 
   // Update inventory
   for (const item of cart.orderItems) {
-    const product = await Product.findById(item.product._id.toString());
+    const product = await Product.findOne({
+      _id: item.product._id,
+    });
 
     if (product) {
       product.stock -= item.quantity;
@@ -140,7 +147,47 @@ export const checkout = asyncErrorHandler(async (req, res) => {
   cart.status = 'checkout';
   cart.transactionId = transactionId;
 
-  await cart.save();
+  await Order.findOneAndUpdate(
+    { user: userId, status: 'cart' },
+    {
+      status: 'checkout',
+      transactionId,
+    }
+  );
+
+  const htmlBody = `
+  <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <p>Dear ${cart.user.name},</p>
+    <p>Thank you for your order with <strong>Luxe and Loom</strong>!</p>
+    <p>Your order has been successfully placed. Here are your order details:</p>
+
+    <ul>
+      ${cart.orderItems
+        .map(
+          item => `
+        <li>
+          <strong>${item.product.name}</strong> - Qty: ${item.quantity} - NPR ${
+            item.product.basePrice * item.quantity
+          }
+        </li>`
+        )
+        .join('')}
+    </ul>
+
+    <p><strong>Total:</strong> NPR ${cart.total}</p>
+
+    <p>Thank you for shopping with us!<br/>The <strong>Luxe and Loom</strong> Team</p>
+  </div>
+`;
+
+  sendMail({
+    from: FROM_EMAIL,
+    to: cart.user.email,
+    subject: 'Order Confirmation - Luxe and Loom',
+    html: htmlBody,
+  });
+
+  logOrder(userId, cart._id);
 
   sendSuccessResponse({ res, data: cart, message: 'Checkout successful' });
 });
@@ -191,4 +238,5 @@ export const updateOrder = asyncErrorHandler(async (req, res) => {
 
   sendSuccessResponse({ res, data: order, message: 'Order status updated' });
 });
+
 

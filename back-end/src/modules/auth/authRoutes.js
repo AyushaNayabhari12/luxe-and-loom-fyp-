@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { authenticateToken } from '../../middlewares/auth.js';
 import {
-    forgotPassword,
-    resendUserVerificationEmail,
-    resetPassword,
-    signIn,
-    signUp,
-    verifyUser,
+  forgotPassword,
+  resendUserVerificationEmail,
+  resetPassword,
+  signIn,
+  signUp,
+  verifyUser,
+  changePassword,
 } from './authController.js';
 
 const authRouter = Router();
@@ -20,7 +21,7 @@ authRouter.route('/send-verification-email').post(resendUserVerificationEmail);
 authRouter.use(authenticateToken);
 
 authRouter.route('/reset-password').post(resetPassword);
-authRouter.route('/change-password').post(resetPassword);
+authRouter.route('/change-password').post(changePassword);
 authRouter.route('/verify-user').get(verifyUser);
 
 export default authRouter;

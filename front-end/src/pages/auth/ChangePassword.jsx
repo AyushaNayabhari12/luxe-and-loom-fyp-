@@ -1,7 +1,7 @@
 import { Button, Input } from '@material-tailwind/react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { patchRequest } from '../../utils/apiHandler';
+import { postRequest } from '../../utils/apiHandler';
 
 const ChangePasswordPage = () => {
   const defaultPasswordInfo = {
@@ -31,7 +31,7 @@ const ChangePasswordPage = () => {
 
     setDisplayLoader(true);
 
-    const res = await patchRequest({
+    const res = await postRequest({
       endpoint: `/auth/change-password/`,
       data: {
         oldPassword,

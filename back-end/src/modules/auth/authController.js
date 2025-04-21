@@ -220,6 +220,49 @@ export const resetPassword = asyncErrorHandler(async (req, res) => {
   });
 });
 
+export const changePassword = asyncErrorHandler(async (req, res) => {
+  const { newPassword, oldPassword } = req.body;
+  const userId = req.userId;
+
+  if (!newPassword | !oldPassword) {
+    createError({
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: 'Password is required',
+    });
+    return;
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    createError({
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: 'User not found',
+    });
+    return;
+  }
+
+  const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
+
+  if (!isPasswordCorrect) {
+    createError({
+      message: 'incorrect current password',
+      statusCode: StatusCodes.BAD_REQUEST,
+    });
+    return;
+  }
+
+  user.password = newPassword;
+
+  await user.save();
+
+  sendSuccessResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    message: 'Your password has been changed successfully.',
+  });
+});
+
 // PATCH /auth/verify-user
 export const verifyUser = asyncErrorHandler(async (req, res) => {
   const userId = req.userId;

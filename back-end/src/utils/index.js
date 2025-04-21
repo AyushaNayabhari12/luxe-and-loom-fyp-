@@ -14,6 +14,12 @@ export const deleteFile = fileName => {
   }
 };
 
+export const getProductFeatureInSingleString = product => {
+  return `${product.name} ${product.description} ${
+    product.category
+  } ${product.sizes.join(' ')} ${product.colors.join(' ')}`;
+};
+
 export * from './token.js';
 export * from './apiResponseHandler.js';
 export * from './asyncErrorHandler.js';

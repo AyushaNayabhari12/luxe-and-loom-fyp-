@@ -11,6 +11,7 @@ import dashboardRouter from './modules/dashboard/dashboardRoutes.js';
 import orderRouter from './modules/order/orderRoutes.js';
 import productRouter from './modules/product/productRoutes.js';
 import userRouter from './modules/user/userRoutes.js';
+import recommendationRouter from './modules/recommendation/recommendationRoutes.js';
 
 const app = express();
 
@@ -31,8 +32,7 @@ app.use('/users', userRouter);
 app.use('/products', productRouter);
 app.use('/orders', orderRouter);
 app.use('/dashboard', dashboardRouter);
-
-
+app.use('/recommendations', recommendationRouter);
 
 app.use(handleError);
 
@@ -49,6 +49,4 @@ connectDB().then(() => {
     console.log(`Listening on port ${PORT}`);
   });
 });
-
-
 

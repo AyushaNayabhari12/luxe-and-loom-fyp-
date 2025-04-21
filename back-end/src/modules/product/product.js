@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import { generateTextEmbedding } from '../recommendation/vectorEmbeddings.js';
+import { getProductFeatureInSingleString } from '../../utils/index.js';
 
 const PRODUCT_CATEGORIES = ['Shawl', 'Scarf', 'Wrap'];
 
@@ -44,11 +46,24 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    embedding: [{ type: Number }],
   },
   {
     timestamps: true,
   }
 );
+
+productSchema.pre('save', async function (next) {
+  if (this.isDeleted) return next();
+
+  const text = getProductFeatureInSingleString(this);
+
+  const embedding = await generateTextEmbedding(text);
+
+  this.embedding = embedding;
+
+  next();
+});
 
 export const Product = mongoose.model('Product', productSchema);
 

@@ -25,6 +25,7 @@ import ProductDetailsPage from './pages/shop/ProductDetailsPage';
 import Shop from './pages/shop/Shop';
 import UserOrderList from './pages/shop/UserOrdersList';
 import PaymentSuccess from './pages/shop/PaymentSuccessPage';
+import ShawlCustomizer from './pages/Customization';
 
 function App() {
   return (
@@ -58,6 +59,8 @@ function App() {
             <Route path='/change-password' element={<ChangePasswordPage />} />
             <Route path='/about' element={<AboutUsPage />} />
 
+            <Route path='/customize' element={<ShawlCustomizer />} />
+
             <Route path='/shop'>
               <Route index element={<Shop />} />
               <Route path=':id' element={<ProductDetailsPage />} />
@@ -80,3 +83,26 @@ function App() {
 
 export default App;
 
+/**
+ * const shawls = [
+  {
+    id: 'shawl1',
+    name: 'Classic Pashmina',
+    baseImage: 'https://www.transparenttextures.com/patterns/white-wall-3.png',
+    dimensions: { width: 400, height: 400 },
+  },
+];
+
+const patterns = [
+  {
+    id: 'pattern1',
+    name: 'Floral Pattern 1',
+    image: 'https://www.transparenttextures.com/patterns/arabesque.png',
+  },
+  {
+    id: 'pattern2',
+    name: 'Geometric Pattern 2',
+    image: 'https://www.transparenttextures.com/patterns/black-twill.png',
+  },
+
+ */

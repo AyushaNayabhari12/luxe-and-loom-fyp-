@@ -9,7 +9,6 @@ import {
   Textarea,
   Typography,
 } from '@material-tailwind/react';
-import { useQuery } from '@tanstack/react-query';
 import { MinusIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { MdArticle } from 'react-icons/md';
@@ -17,13 +16,10 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import useAuthContext from '../../hooks/useAuthContext';
 import useDebounce from '../../hooks/useDebounce';
+import { useFetchCart } from '../../hooks/useFetchOrder';
 import { useKhalti } from '../../khalti/useKhalti';
 import { formatImageUrl } from '../../utils';
-import {
-  deleteRequest,
-  getRequest,
-  patchRequest,
-} from '../../utils/apiHandler';
+import { deleteRequest, patchRequest } from '../../utils/apiHandler';
 
 const CartPage = () => {
   const { currentUser } = useAuthContext();
@@ -52,22 +48,7 @@ const CartPage = () => {
     },
   });
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['Cart Items', currentUser?._id],
-    queryFn: async ({ queryKey }) => {
-      try {
-        const res = await getRequest({
-          endpoint: '/orders/cart',
-        });
-
-        setOrder(res?.data);
-
-        return res?.data || [];
-      } catch (error) {
-        return [];
-      }
-    },
-  });
+  const { data, isLoading, refetch } = useFetchCart();
 
   const handleQuantity = (type, id, quantity = null) => {
     setOrder(prevOrder => {
@@ -192,6 +173,8 @@ const CartPage = () => {
 
   const updateOrder = async () => {
     try {
+      if (!order) return;
+
       await patchRequest({
         endpoint: `/orders/${order._id}`,
         data: {
@@ -217,6 +200,10 @@ const CartPage = () => {
       updateOrder();
     }
   }, [debouncedNotesValue, debouncedDeliveryAddressValue]);
+
+  useEffect(() => {
+    setOrder(data);
+  }, [data]);
 
   if (isLoading) {
     return <div className=' bg-gray-100 p-20'>Fetching data...</div>;

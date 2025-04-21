@@ -36,6 +36,8 @@ export function ResetPassword() {
         body: JSON.stringify({ password }),
       });
 
+      const resData = await res.json();
+
       if (res.ok) {
         toast.success('Password Reset Successfully');
         setConfirmPassword('');
@@ -44,7 +46,7 @@ export function ResetPassword() {
         return;
       }
 
-      setError(res.message || 'An error occurred. Please try again.');
+      setError(resData.message || 'An error occurred. Please try again.');
     } catch (err) {
       console.log(err);
       setError('An error occurred. Please try again.');
@@ -80,6 +82,7 @@ export function ResetPassword() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+              placeholder='Enter your password'
             />
           </div>
         </div>
@@ -100,6 +103,7 @@ export function ResetPassword() {
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
               className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+              placeholder='Enter your password'
             />
           </div>
         </div>
@@ -113,4 +117,5 @@ export function ResetPassword() {
     </AuthLayout>
   );
 }
+
 

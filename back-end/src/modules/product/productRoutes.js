@@ -16,7 +16,7 @@ const productRouter = Router();
 
 productRouter
   .route('/')
-  .get(getAllProducts)
+  .get(authenticateToken, getAllProducts)
   .post(authenticateToken, upload.any('images'), createProduct);
 
 productRouter.use(authenticateToken);
@@ -32,4 +32,5 @@ productRouter
   .get(getProductById);
 
 export default productRouter;
+
 

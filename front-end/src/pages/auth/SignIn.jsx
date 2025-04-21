@@ -96,6 +96,7 @@ export function SignIn() {
               value={authInfo.email}
               onChange={handleChange}
               className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+              placeholder='Enter your email'
             />
           </div>
         </div>
@@ -117,6 +118,7 @@ export function SignIn() {
                 value={authInfo.password}
                 onChange={handleChange}
                 className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+                placeholder='Enter your password'
               />
             </div>
           </div>
@@ -148,4 +150,6 @@ export function SignIn() {
     </AuthLayout>
   );
 }
+
+
 

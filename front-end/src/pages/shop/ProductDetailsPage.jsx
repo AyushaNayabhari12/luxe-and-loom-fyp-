@@ -6,16 +6,19 @@ import {
   Select,
   Tooltip,
 } from '@material-tailwind/react';
-import { useQuery } from '@tanstack/react-query';
 import React, { useRef, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 import { useParams } from 'react-router';
 import { toast } from 'sonner';
 import ProductCard from '../../components/shop/ProductCard';
-import { COLORS, SIZES } from '../../config';
-import { formatImageUrl } from '../../utils';
-import { getRequest, postRequest } from '../../utils/apiHandler';
 import TryOn from '../../components/shop/TryOn';
+import { COLORS, SIZES } from '../../config';
+import {
+  useFetchProductById,
+  useFetchSimilarProducts,
+} from '../../hooks/useFetchProducts';
+import { formatImageUrl } from '../../utils';
+import { postRequest } from '../../utils/apiHandler';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
@@ -30,45 +33,9 @@ const ProductDetailsPage = () => {
 
   const [cartDetails, setCartDetails] = useState(defaultCartDetails);
   const [loading, setLoading] = useState(false);
+  const { data: product, isLoading } = useFetchProductById(id);
 
-  const {
-    data: product,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['PRODUCT_BY_ID', id],
-    queryFn: async ({ queryKey }) => {
-      try {
-        const [_searchText, _role] = queryKey;
-
-        const res = await getRequest({
-          endpoint: `/products/${id}`,
-        });
-
-        return res?.data || [];
-      } catch (error) {
-        return [];
-      }
-    },
-  });
-
-  const { data: similarProducts } = useQuery({
-    queryKey: ['Similar Products', id, product?.category],
-    queryFn: async () => {
-      try {
-        const category = product.category ?? '';
-
-        const res = await getRequest({
-          endpoint: `/products/similar?category=${category}&currentProduct=${id}`,
-        });
-
-        return res?.data || [];
-      } catch (error) {
-        return [];
-      }
-    },
-    enabled: !!product,
-  });
+  const { data: similarProducts } = useFetchSimilarProducts(product);
 
   const handleColorToggle = c => {
     setCartDetails(prevCartDetails => {

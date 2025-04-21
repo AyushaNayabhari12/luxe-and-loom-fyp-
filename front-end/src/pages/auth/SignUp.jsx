@@ -89,6 +89,7 @@ export function SignUp() {
                 value={authInfo.name}
                 onChange={handleChange}
                 className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+                placeholder='Enter your name'
               />
             </div>
           </div>
@@ -109,6 +110,7 @@ export function SignUp() {
                 value={authInfo.email}
                 onChange={handleChange}
                 className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+                placeholder='Enter your email'
               />
             </div>
           </div>
@@ -129,6 +131,7 @@ export function SignUp() {
                 value={authInfo.address}
                 onChange={handleChange}
                 className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+                placeholder='Enter your address'
               />
             </div>
           </div>
@@ -149,6 +152,7 @@ export function SignUp() {
                 value={authInfo.phoneNum}
                 onChange={handleChange}
                 className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+                placeholder='Enter your phone number'
               />
             </div>
           </div>
@@ -169,6 +173,7 @@ export function SignUp() {
                 value={authInfo.password}
                 onChange={handleChange}
                 className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+                placeholder='Enter your password'
               />
             </div>
           </div>
@@ -189,6 +194,7 @@ export function SignUp() {
                 value={authInfo.confirmPassword}
                 onChange={handleChange}
                 className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+                placeholder='Enter your confirm password'
               />
             </div>
           </div>
