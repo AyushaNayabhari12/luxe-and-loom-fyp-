@@ -43,6 +43,10 @@ orderSchema.pre('save', async function (next) {
     if (product) {
       total += el.quantity * product.basePrice;
     }
+
+    if (el.customizedImage) {
+      total += el.quantity * el.price;
+    }
   }
 
   this.total = Number(total.toFixed(2));

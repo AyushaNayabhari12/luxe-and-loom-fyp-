@@ -21,6 +21,8 @@ const Navbar = ({ bgTransparent }) => {
 
           <Link to='/shop'>Shop</Link>
 
+          <Link to='/customize'>Customize</Link>
+
           <Link to='/shop/orders'>Orders</Link>
 
           <Link to='/about'>About Us</Link>

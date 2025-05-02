@@ -14,10 +14,12 @@ export function SignIn() {
   const defaultAuthInfo = {
     email: '',
     password: '',
+    otp: '',
   };
 
   const [authInfo, setAuthInfo] = useState(defaultAuthInfo);
   const { setCurrentUser, setAuthToken } = useAuthContext();
+  const [requiresOtp, setRequiresOtp] = useState(false);
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,7 +37,14 @@ export function SignIn() {
       });
 
       if (res.ok) {
-        const { token, user } = res.data;
+        const { token = '', user } = res.data;
+
+        if (!user.isVerified) {
+          setRequiresOtp(true);
+
+          setError(res.message);
+          return;
+        }
 
         setAuthToken(token);
         setCurrentUser(user);
@@ -101,6 +110,28 @@ export function SignIn() {
           </div>
         </div>
 
+        {requiresOtp && (
+          <div>
+            <label
+              htmlFor='otp'
+              className='block text-sm font-medium text-gray-700'>
+              OTP
+            </label>
+            <div className='mt-1'>
+              <input
+                id='otp'
+                name='otp'
+                type='text'
+                required
+                value={authInfo.otp}
+                onChange={handleChange}
+                className='appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-black focus:border-black sm:text-sm'
+                placeholder='Enter your OTP'
+              />
+            </div>
+          </div>
+        )}
+
         <div>
           <div>
             <label
@@ -150,6 +181,5 @@ export function SignIn() {
     </AuthLayout>
   );
 }
-
 
 

@@ -64,6 +64,7 @@ function App() {
             <Route path='/shop'>
               <Route index element={<Shop />} />
               <Route path=':id' element={<ProductDetailsPage />} />
+
               <Route path='orders' element={<UserOrderList />} />
 
               <Route path='cart' element={<CartPage />} />
@@ -106,3 +107,5 @@ const patterns = [
   },
 
  */
+
+

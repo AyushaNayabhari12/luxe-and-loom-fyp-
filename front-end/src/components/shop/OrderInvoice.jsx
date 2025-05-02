@@ -8,6 +8,8 @@ import {
   CardBody,
 } from '@material-tailwind/react';
 import { format } from 'date-fns';
+import { Link } from 'react-router';
+import { SERVER_URL } from '../../config';
 
 const OrderInvoice = ({ order, openDialog, handleOpenDialog }) => {
   return (
@@ -69,6 +71,8 @@ const OrderInvoice = ({ order, openDialog, handleOpenDialog }) => {
               <tr>
                 <th className='p-3 border border-gray-200'>SN</th>
                 <th className='p-3 border border-gray-200'>Product</th>
+                <th className='p-3 border border-gray-200'>Size</th>
+                <th className='p-3 border border-gray-200'>Color</th>
                 <th className='p-3 border border-gray-200'>Qty</th>
                 <th className='p-3 border border-gray-200'>Price</th>
                 <th className='p-3 border border-gray-200'>Subtotal</th>
@@ -79,16 +83,37 @@ const OrderInvoice = ({ order, openDialog, handleOpenDialog }) => {
                 <tr key={item._id} className='text-sm text-gray-700'>
                   <td className='p-3 border border-gray-200'>{index + 1}</td>
                   <td className='p-3 border border-gray-200'>
-                    {item.product?.name || 'N/A'}
+                    <Link
+                      to={`${
+                        item?.product
+                          ? `/shop/${item.product._id}`
+                          : `${SERVER_URL}/${item?.customizedImage}`
+                      }`}
+                      target='_blank'
+                      className='text-blue-600 hover:underline'>
+                      {item.product?.name || 'Customized Shawls'}
+                    </Link>
                   </td>
+
+                  <td className='p-3 border border-gray-200'>
+                    {item.size || 'Customized Shawls'}
+                  </td>
+
+                  <td className='p-3 border border-gray-200'>
+                    {item?.color || 'N/A'}
+                  </td>
+
                   <td className='p-3 border border-gray-200'>
                     {item.quantity}
                   </td>
                   <td className='p-3 border border-gray-200'>
-                    NPR {item.product?.basePrice?.toFixed(2)}
+                    NPR {item.product?.basePrice?.toFixed(2) || item?.price}
                   </td>
                   <td className='p-3 border border-gray-200'>
-                    NPR {(item.product?.basePrice * item.quantity).toFixed(2)}
+                    NPR{' '}
+                    {(
+                      item.product?.basePrice || item?.price * item.quantity
+                    ).toFixed(2)}
                   </td>
                 </tr>
               ))}

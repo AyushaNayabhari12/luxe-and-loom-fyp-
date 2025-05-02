@@ -22,7 +22,11 @@ const mailMessageFormat = {
 };
 
 export const sendMail = async mailMessage => {
-  const transporter = nodemailer.createTransport(transporterConfig);
-  await transporter.sendMail(mailMessage);
+  try {
+    const transporter = nodemailer.createTransport(transporterConfig);
+    await transporter.sendMail(mailMessage);
+  } catch (error) {
+    console.log(error);
+  }
 };
 

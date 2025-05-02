@@ -7,6 +7,7 @@ import { Order } from './Order.js';
 import { sendMail } from '../../utils/mail.js';
 import { FROM_EMAIL } from '../../config/index.js';
 import { logOrder } from '../recommendation/utils.js';
+import { deleteFile } from '../../utils/index.js';
 
 // GET /orders/cart
 export const getCart = asyncErrorHandler(async (req, res) => {
@@ -36,9 +37,22 @@ export const getCart = asyncErrorHandler(async (req, res) => {
 // POST /orders/cart
 export const addToCart = asyncErrorHandler(async (req, res) => {
   const userId = req.userId;
+  const customizedImage = req?.file?.filename;
   const { productId, quantity, size, color } = req.body;
 
-  if (!productId || !quantity || !size || !color) {
+  if (!quantity || !size) {
+    deleteFile(customizedImage);
+
+    return createError({
+      res,
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: 'All fields are required',
+    });
+  }
+
+  if (!customizedImage && (!productId || !color)) {
+    deleteFile(customizedImage);
+
     return createError({
       res,
       statusCode: StatusCodes.BAD_REQUEST,
@@ -52,17 +66,39 @@ export const addToCart = asyncErrorHandler(async (req, res) => {
     cart = new Order({ user: userId, orderItems: [] });
   }
 
-  const existingItem = cart.orderItems.find(
-    item =>
-      item.product.toString() === productId &&
-      item.size === size &&
-      item.color === color
-  );
+  // Check if same customized item already exists
+  const existingItem = cart.orderItems.find(item => {
+    if (productId) {
+      // For normal product
+      return (
+        item.product?.toString() === productId &&
+        item.size === size &&
+        item.color === color
+      );
+    } else if (customizedImage) {
+      // For customized product (based on image matching)
+      return item.customizedImage === customizedImage && item.size === size;
+    }
+    return false;
+  });
 
   if (existingItem) {
     existingItem.quantity += quantity;
   } else {
-    cart.orderItems.push({ product: productId, quantity, size, color });
+    const newItem = {
+      quantity,
+      size,
+      color,
+    };
+
+    if (productId) {
+      newItem.product = productId;
+    } else if (customizedImage) {
+      newItem.price = 1200;
+      newItem.customizedImage = customizedImage;
+    }
+
+    cart.orderItems.push(newItem);
   }
 
   await cart.save();
@@ -134,8 +170,10 @@ export const checkout = asyncErrorHandler(async (req, res) => {
 
   // Update inventory
   for (const item of cart.orderItems) {
+    if (!item?.product) continue;
+
     const product = await Product.findOne({
-      _id: item.product._id,
+      _id: item.product?._id,
     });
 
     if (product) {
@@ -166,8 +204,10 @@ export const checkout = asyncErrorHandler(async (req, res) => {
         .map(
           item => `
         <li>
-          <strong>${item.product.name}</strong> - Qty: ${item.quantity} - NPR ${
-            item.product.basePrice * item.quantity
+          <strong>${
+            item?.product?.name || 'Customized Shawl'
+          }</strong> - Qty: ${item.quantity} - NPR ${
+            item?.price || item?.product?.basePrice * item.quantity
           }
         </li>`
         )
@@ -238,5 +278,4 @@ export const updateOrder = asyncErrorHandler(async (req, res) => {
 
   sendSuccessResponse({ res, data: order, message: 'Order status updated' });
 });
-
 

@@ -1,24 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { Button, Input, Typography } from '@material-tailwind/react';
 import * as fabric from 'fabric';
-import {
-  Input,
-  Button,
-  Typography,
-  Select,
-  Option,
-  Card,
-} from '@material-tailwind/react';
+import React, { useEffect, useRef, useState } from 'react';
+import AddToCartDialog from './shop/AddToCartDialog';
 
-const patterns = [
-  { id: 1, name: 'Floral', src: '/floral.png' },
-  { id: 2, name: 'Geometric', src: '/geometric.png' },
-  { id: 3, name: 'Argyle', src: '/argyle.png' },
-];
+const patterns = ['/pattern1.webp'];
 
 const shawlImages = [
-  { label: 'Shawl 1', value: '/shawl-1.png' },
-  { label: 'Shawl 2', value: '/shawl-2.png' },
-  { label: 'Shawl 3', value: '/shawl-3.png' },
+  '/shawl2.webp',
+  '/shawl3.webp',
+  '/shawl4.webp',
+  '/shawl7.webp',
+  '/shawl9.webp',
+  '/shawl10.webp',
 ];
 
 const ShawlCustomizer = () => {
@@ -26,7 +19,7 @@ const ShawlCustomizer = () => {
   const [canvas, setCanvas] = useState(null);
   const [textInput, setTextInput] = useState('');
   const [textColor, setTextColor] = useState('#000000');
-  const [selectedShawl, setSelectedShawl] = useState(shawlImages[0].value);
+  const [selectedShawl, setSelectedShawl] = useState(shawlImages[0]);
 
   useEffect(() => {
     const fabricCanvas = new fabric.Canvas('canvas', {
@@ -54,28 +47,40 @@ const ShawlCustomizer = () => {
   }, [selectedShawl]);
 
   const loadShawlImage = (fabricCanvas, src) => {
+    if (!src) return;
+
     const imgEl = document.createElement('img');
     imgEl.src = src;
 
     imgEl.onload = function () {
       const img = new fabric.Image(imgEl);
+
+      const canvasWidth = fabricCanvas.width;
+      const canvasHeight = fabricCanvas.height;
+      const imgWidth = imgEl.width;
+      const imgHeight = imgEl.height;
+
+      const scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight);
+
       img.set({
+        scaleX: scale,
+        scaleY: scale,
+        left: (canvasWidth - imgWidth * scale) / 2, // center horizontally
+        top: (canvasHeight - imgHeight * scale) / 2, // center vertically
         selectable: false,
         evented: false,
-        scaleX: fabricCanvas.width / imgEl.width,
-        scaleY: fabricCanvas.height / imgEl.height,
-        left: 0,
-        top: 0,
+        objectType: 'shawl',
       });
 
       const existingShawl = fabricCanvas
         .getObjects()
         .find(obj => obj.objectType === 'shawl');
+
       if (existingShawl) fabricCanvas.remove(existingShawl);
 
       img.set({ objectType: 'shawl' });
       fabricCanvas.add(img);
-      fabricCanvas.sendToBack(img);
+      // fabricCanvas.sendToBack(img);
     };
   };
 
@@ -136,70 +141,125 @@ const ShawlCustomizer = () => {
     }
   };
 
+  const convertCanvasToImage = () => {
+    if (!canvas) return;
+    const dataURL = canvas.toDataURL({
+      format: 'png', // or 'jpeg'
+      quality: 1,
+    });
+
+    return dataURL;
+  };
+
+  const downloadCanvasAsImage = () => {
+    const dataURL = convertCanvasToImage();
+
+    if (!dataURL) return;
+
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download =
+      Math.floor(Math.random() * 123456789) + '_customized_shawl.png';
+    link.click();
+  };
+
   return (
-    <div className='flex flex-col md:flex-row gap-6 p-6'>
-      <div className='flex justify-center'>
-        <canvas id='canvas' ref={canvasRef}></canvas>
-      </div>
+    <div className='p-10'>
+      <Typography variant='h4' className='text-center mb-2'>
+        Customize
+      </Typography>
+      <Typography className='text-center text-gray-600 mb-8'>
+        Review your customized shawl, adjust options, and proceed to checkout
+        from the cart page.
+      </Typography>
 
-      <div className='flex flex-col gap-4 w-full max-w-md'>
-        <Typography variant='h6'>Choose Shawl</Typography>
-        <div className='flex gap-3'>
-          {shawlImages.map(shawl => (
-            <img
-              key={shawl.value}
-              src={shawl.value}
-              alt={shawl.label}
-              onClick={() => setSelectedShawl(shawl.value)}
-              className={`w-20 h-20 object-cover rounded-md border-2 cursor-pointer ${
-                selectedShawl === shawl.value
-                  ? 'border-blue-600'
-                  : 'border-gray-200'
-              }`}
+      <div className='flex flex-col md:flex-row gap-6 p-20'>
+        <div className='flex justify-center'>
+          <canvas id='canvas' ref={canvasRef}></canvas>
+        </div>
+
+        <div className='flex flex-col gap-4 w-full max-w-md'>
+          <Typography variant='h6'>Choose Shawl</Typography>
+          <div className='flex gap-3'>
+            {shawlImages.map(shawl => (
+              <img
+                key={shawl}
+                src={shawl}
+                alt={shawl}
+                onClick={() => setSelectedShawl(shawl)}
+                className={`w-20 h-20 object-cover rounded-md border-2 cursor-pointer ${
+                  selectedShawl === shawl
+                    ? 'border-blue-600'
+                    : 'border-gray-200'
+                }`}
+              />
+            ))}
+          </div>
+
+          <Typography variant='h6'>Choose Pattern</Typography>
+          <div className='flex gap-3 flex-wrap'>
+            {patterns.map(p => (
+              <img
+                key={p}
+                src={p}
+                alt={p}
+                className='w-20 h-20 cursor-pointer border border-gray-200 hover:border-black rounded-md object-cover'
+                onClick={() => addPattern(p)}
+              />
+            ))}
+          </div>
+
+          <div className='flex items-center gap-3'>
+            <Input
+              label='Enter text'
+              value={textInput}
+              onChange={e => setTextInput(e.target.value)}
+              color='gray'
             />
-          ))}
-        </div>
 
-        <Typography variant='h6'>Choose Pattern</Typography>
-        <div className='flex gap-3 flex-wrap'>
-          {patterns.map(p => (
-            <img
-              key={p.id}
-              src={p.src}
-              alt={p.name}
-              className='w-20 h-20 cursor-pointer border border-gray-200 hover:border-black rounded-md object-cover'
-              onClick={() => addPattern(p.src)}
+            <input
+              type='color'
+              value={textColor}
+              onChange={handleColorChange}
+              className='w-[80px] h-full border rounded'
             />
-          ))}
+          </div>
+
+          <div className='grid grid-cols-2 gap-3 mt-4'>
+            <Button
+              onClick={addText}
+              color='blue'
+              fullWidth
+              className='rounded-md'>
+              Add Text
+            </Button>
+
+            <Button
+              onClick={deleteSelected}
+              color='red'
+              fullWidth
+              className='rounded-md'>
+              Delete Selected
+            </Button>
+
+            <Button
+              onClick={downloadCanvasAsImage}
+              color='green'
+              fullWidth
+              className='rounded-md'>
+              Download Design
+            </Button>
+
+            <AddToCartDialog
+              isCustomization
+              convertCanvasToImage={convertCanvasToImage}
+            />
+          </div>
         </div>
-
-        <div className='flex items-center gap-3'>
-          <Input
-            label='Enter text'
-            value={textInput}
-            onChange={e => setTextInput(e.target.value)}
-            color='gray'
-          />
-
-          <input
-            type='color'
-            value={textColor}
-            onChange={handleColorChange}
-            className='w-[80px] h-full border rounded'
-          />
-        </div>
-
-        <Button onClick={addText} color='blue'>
-          Add Text
-        </Button>
-        <Button onClick={deleteSelected} color='red'>
-          Delete Selected
-        </Button>
       </div>
     </div>
   );
 };
 
 export default ShawlCustomizer;
-
 

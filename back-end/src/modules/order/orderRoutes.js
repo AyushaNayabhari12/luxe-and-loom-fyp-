@@ -11,13 +11,18 @@ import {
   updateOrder,
 } from './orderController.js';
 
+import upload from '../../middlewares/fileUpload.js';
+
 const orderRouter = Router();
 
 orderRouter.use(authenticateToken);
 
 orderRouter.route('/').get(getAllOrders);
 
-orderRouter.route('/cart').post(addToCart).get(getCart);
+orderRouter
+  .route('/cart')
+  .post(upload.single('customizedImage'), addToCart)
+  .get(getCart);
 
 orderRouter.route('/cart/checkout').post(checkout);
 

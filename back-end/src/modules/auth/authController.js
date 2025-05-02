@@ -6,29 +6,21 @@ import jwt from 'jsonwebtoken';
 import {
   asyncErrorHandler,
   createError,
+  generateOtp,
   sendMail,
   sendSuccessResponse,
 } from '../../utils/index.js';
 import { User } from '../user/user.js';
 
-const sendUserVerificationEmail = async (userId, name, email) => {
-  if (!userId || !name || !email) return;
-
-  const token = jwt.sign({ userId }, SECRET_KEY, {
-    expiresIn: '24h',
-  });
+const sendUserVerificationEmail = async (name, email, otp) => {
+  if (!otp || !name || !email) return;
 
   const htmlBody = `
   <div style="font-family: Arial, sans-serif; line-height: 1.6;">
     <p>Dear ${name},</p>
-    <p>Thank you for registering with <strong>Luxe and Loom</strong>. To complete your registration and verify your email address, please click the button below:</p>
-    <p>
-      <a href="${CLIENT_URL}/verify-email?token=${token}" 
-         style="display: inline-block; padding: 10px 20px; color: white; background-color: #28a745; text-decoration: none; border-radius: 5px;">
-        Verify Email
-      </a>
-    </p>
-    <p><strong>Note:</strong> This link will expire in 24 hours.</p>
+    <p>Thank you for registering with <strong>Luxe and Loom</strong>. To complete your registration and verify your email address, please use the One-Time Password (OTP) provided below:</p>
+    <h2 style="color: #28a745; font-size: 24px;">${otp}</h2>
+    <p><strong>Note:</strong> This OTP is valid for 5 Minutes.</p>
     <p>If you didn’t register for an account, you can safely ignore this email.</p>
     <p>Thank you,<br/>The <strong>Luxe and Loom</strong> Team</p>
   </div>
@@ -85,38 +77,75 @@ export const signUp = asyncErrorHandler(async (req, res) => {
   });
 });
 
-// POST /auth/sign-in
 export const signIn = asyncErrorHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, otp } = req.body;
 
   if (!email || !password) {
-    createError({
-      message: 'Invalid data received',
+    return createError({
+      message: 'Email and password are required',
       statusCode: StatusCodes.BAD_REQUEST,
     });
-    return;
   }
 
-  const user = await User.findOne({ email });
+  let user = await User.findOne({ email });
 
-  const isPasswordCorrect = user
-    ? await bcrypt.compare(password, user.password)
-    : false;
+  if (!user) {
+    return createError({
+      message: 'User not found',
+      statusCode: StatusCodes.NOT_FOUND,
+    });
+  }
+
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
   if (!isPasswordCorrect) {
-    createError({
-      message: 'Username or password incorrect',
-      statusCode: StatusCodes.BAD_REQUEST,
+    return createError({
+      message: 'Incorrect email or password',
+      statusCode: StatusCodes.UNAUTHORIZED,
     });
-    return;
   }
 
-  if (!user?.isVerified) {
-    createError({
-      message: 'User not verified. Please check your email for verification',
-      statusCode: StatusCodes.BAD_REQUEST,
-    });
-    return;
+  // If user is not verified, require OTP
+  if (!user.isVerified) {
+    if (!otp && user.otp.code && new Date(user.otp.expires) > new Date()) {
+      user.otp = null;
+
+      return sendSuccessResponse({
+        res,
+        data: { user },
+        message: 'OTP already sent. Please check your email.',
+      });
+    }
+
+    // No OTP sent yet
+    if (!otp || new Date(user.otp.expires) < new Date()) {
+      user.otp = generateOtp();
+      await user.save();
+      await sendUserVerificationEmail(user.name, user.email, user.otp.code);
+
+      user.otp = null;
+
+      return sendSuccessResponse({
+        res,
+        data: { user },
+        message: !otp
+          ? 'New OTP has been sent for verification'
+          : 'OTP Expired, New OTP has been sent to your email.',
+      });
+    }
+
+    // OTP entered but invalid
+    if (user.otp.code !== otp) {
+      return createError({
+        message: 'Invalid OTP. Please try again.',
+        statusCode: StatusCodes.UNAUTHORIZED,
+      });
+    }
+
+    // OTP is valid
+    user.isVerified = true;
+    user.otp = undefined;
+    user = await user.save();
   }
 
   const tokenExpiryTime = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -124,7 +153,7 @@ export const signIn = asyncErrorHandler(async (req, res) => {
     expiresIn: tokenExpiryTime,
   });
 
-  sendSuccessResponse({
+  return sendSuccessResponse({
     res,
     data: { token, user },
     message: 'Successfully logged in',

@@ -57,29 +57,37 @@ const CartPage = () => {
         orderItems: prevOrder.orderItems.map(item => {
           if (item._id !== id) return item;
 
-          if (
-            type === 'input' &&
-            quantity > 0 &&
-            quantity < item.product.stock
-          ) {
-            return {
-              ...item,
-              quantity,
-            };
+          const isCustomized = !item.product?._id; // If no product._id, it's customized
+
+          if (type === 'input') {
+            if (
+              quantity > 0 &&
+              (isCustomized || quantity <= item.product.stock)
+            ) {
+              return {
+                ...item,
+                quantity,
+              };
+            }
           }
 
-          if (type === 'inc' && item.quantity < item.product.stock) {
-            return {
-              ...item,
-              quantity: item.quantity + 1,
-            };
+          if (type === 'inc') {
+            if (isCustomized || item.quantity < item.product.stock) {
+              return {
+                ...item,
+                quantity: item.quantity + 1,
+              };
+            }
           }
 
-          if (type === 'dec' && item.quantity > 1)
-            return {
-              ...item,
-              quantity: item.quantity - 1,
-            };
+          if (type === 'dec') {
+            if (item.quantity > 1) {
+              return {
+                ...item,
+                quantity: item.quantity - 1,
+              };
+            }
+          }
 
           return item;
         }),
@@ -229,23 +237,33 @@ const CartPage = () => {
           <div className='lg:col-span-2 space-y-6'>
             {/* Product Card */}
             {order?.orderItems?.map(item => {
-              const { _id, size, color, quantity, product } = item;
+              const {
+                _id,
+                size,
+                color,
+                quantity,
+                product,
+                customizedImage,
+                price,
+              } = item;
               return (
                 <Card shadow={true} className='p-0 m-0'>
                   <CardBody className='flex flex-col lg:flex-row gap-6 items-center justify-between p-3'>
                     <img
-                      src={formatImageUrl(product.images[0])}
-                      alt={product.name}
+                      src={formatImageUrl(customizedImage || product.images[0])}
+                      alt={product?.name || 'Customized Shawl'}
                       className='w-28 h-28 object-cover rounded-md'
                     />
                     <div className='flex-1 space-y-2'>
-                      <Typography variant='h6'>{product.name}</Typography>
+                      <Typography variant='h6'>
+                        {product?.name || 'Customized Shawl'}
+                      </Typography>
                       <Typography className='text-gray-700 font-semibold'></Typography>
 
                       <div className='text-sm text-gray-600'>
-                        <p>Price: NPR {product.basePrice}</p>
-                        <p>Size: {color}</p>
-                        <p>Color: {size}</p>
+                        <p>Price: NPR {price || product?.basePrice}</p>
+                        <p>Size: {size}</p>
+                        {color && <p>Color: {color}</p>}
                       </div>
                     </div>
 
@@ -287,7 +305,8 @@ const CartPage = () => {
 
                     <div className='flex items-center gap-4'>
                       <Typography variant='paragraph' className='font-semibold'>
-                        NPR {(product.basePrice * quantity).toFixed(2)}
+                        NPR{' '}
+                        {((price || product?.basePrice) * quantity).toFixed(2)}
                       </Typography>
                       <IconButton
                         variant='text'
