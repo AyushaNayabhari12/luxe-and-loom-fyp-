@@ -8,7 +8,7 @@ function cosineSimilarity(vecA, vecB) {
   return magnitudeA && magnitudeB ? dotProduct / (magnitudeA * magnitudeB) : 0;
 }
 
-export async function getRecommendations(userId, limit = 10) {
+export async function getRecommendations(userId, limit = 4) {
   const userEmbedding = await generateUserEmbedding(userId);
   const products = await Product.find({ embedding: { $ne: [] } });
 

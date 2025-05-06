@@ -14,23 +14,26 @@ import useDebounce from '../../../hooks/useDebounce';
 import { deleteRequest, getRequest } from '../../../utils/apiHandler';
 import { formatImageUrl } from '../../../utils/index';
 import PaginationButtons from '../../../components/shared/PaginationButtons';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 
 const ProductsList = () => {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTextValue = useDebounce(searchText, 1000);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const {
     data: response,
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: [debouncedSearchTextValue, 'Products'],
+    queryKey: [debouncedSearchTextValue, 'Products', searchParams.get('page')],
     queryFn: async ({ queryKey }) => {
       const [keyword] = queryKey;
       const res = await getRequest({
-        endpoint: `/products?keyword=${keyword}`,
+        endpoint: `/products?keyword=${keyword}&page=${searchParams.get(
+          'page'
+        )}`,
       });
       return res?.data;
     },

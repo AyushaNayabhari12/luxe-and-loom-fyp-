@@ -10,7 +10,7 @@ export async function getRecommendedProducts(req, res) {
   
 
   if (!recommendations || recommendations.length === 0) {
-    recommendations = await Product.find({ category }).limit(10);
+    recommendations = await Product.find({ category }).limit(4);
   }
 
   sendSuccessResponse({
