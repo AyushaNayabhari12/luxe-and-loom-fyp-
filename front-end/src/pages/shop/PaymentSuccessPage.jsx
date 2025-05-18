@@ -7,7 +7,7 @@ import {
   Spinner,
   Typography,
 } from '@material-tailwind/react';
-import { useEffect, useState } from 'react';
+import {useContext, useEffect, useState} from 'react';
 import {
   IoAlertCircleOutline,
   IoCheckmarkCircleOutline,
@@ -15,11 +15,13 @@ import {
 } from 'react-icons/io5';
 import { useNavigate, useSearchParams } from 'react-router';
 import { postRequest } from '../../utils/apiHandler';
+import {OrderContext} from "../../context/OrderContext.jsx";
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [errorMessage, setErrorMessage] = useState('');
+
 
   const [loading, setLoading] = useState(false);
 
@@ -32,6 +34,28 @@ export default function PaymentSuccess() {
   const checkoutCart = async () => {
     try {
       setLoading(true);
+
+      const {size, quantity, customizedImage } = JSON.parse(localStorage.getItem("customizedShawlOrder")) || {};
+
+      if(size && quantity && customizedImage){
+
+        const formData = new FormData();
+
+        formData.append('quantity', quantity);
+        formData.append('customizedImage', base64ToFile(customizedImage));
+        formData.append('size', size);
+        formData.append('transactionId', transactionId);
+
+        await postRequest({
+          endpoint: '/orders/buy-now',
+          data: formData
+        });
+
+        localStorage.removeItem("customizedShawlOrder");
+
+        return;
+      }
+
       await postRequest({
         endpoint: '/orders/cart/checkout',
         data: {
@@ -55,7 +79,21 @@ export default function PaymentSuccess() {
     if (status === 'Completed') {
       checkoutCart();
     }
-  }, [status]);
+  }, []);
+
+  function base64ToFile(base64String, filename = 'customized_shawl.png') {
+    const arr = base64String.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]); // decode Base64 string
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    return new File([u8arr], filename, { type: mime });
+  }
 
   const DetailItem = ({ label, value }) => (
     <div className='flex justify-between items-center py-1'>

@@ -5,18 +5,19 @@ import { BrowserRouter } from 'react-router';
 import App from './App.jsx';
 import { AuthContextProvider } from './context/AuthContext.jsx';
 import './index.css';
+import {OrderContextProvider} from "./context/OrderContext.jsx";
 
 export const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthContextProvider>
-          <App />
+         <OrderContextProvider>
+             <App />
+         </OrderContextProvider>
         </AuthContextProvider>
       </BrowserRouter>
     </QueryClientProvider>
-  </StrictMode>
 );
 

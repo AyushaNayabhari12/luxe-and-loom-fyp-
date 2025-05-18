@@ -1,7 +1,22 @@
-import { Button, Input, Typography } from '@material-tailwind/react';
+import {
+  Alert,
+  Button,
+  Dialog,
+  DialogBody, DialogFooter,
+  DialogHeader,
+  Input,
+  Option,
+  Select,
+  Typography
+} from '@material-tailwind/react';
 import * as fabric from 'fabric';
-import React, { useEffect, useRef, useState } from 'react';
-import AddToCartDialog from './shop/AddToCartDialog';
+import React, { useEffect, useRef, useState} from 'react';
+import {useKhalti} from "../khalti/useKhalti.js";
+import {toast} from "sonner";
+import {useNavigate} from "react-router";
+import useAuthContext from "../hooks/useAuthContext.js";
+import {v4 as uuid } from 'uuid';
+import {SIZES} from "../config/index.js";
 
 const patterns = ['/pattern1.webp'];
 
@@ -20,6 +35,25 @@ const ShawlCustomizer = () => {
   const [textInput, setTextInput] = useState('');
   const [textColor, setTextColor] = useState('#000000');
   const [selectedShawl, setSelectedShawl] = useState(shawlImages[0]);
+  const navigate = useNavigate();
+  const { currentUser } = useAuthContext();
+  const [openModal, setOpenModal] = useState(false);
+  const [quantity, setQuantity] = useState(0);
+  const [size, setSize] = useState(0);
+
+  const {
+    initiate,
+    initiationError,
+    isLoading: isKhaltiLoading,
+  } = useKhalti({
+    onSuccess: () => {
+      navigate('/shop');
+    },
+    onError: error => {
+      toast.error('Unable to checkout at the moment, please try again later.');
+      console.error('Payment error:', error.message);
+    },
+  });
 
   useEffect(() => {
     const fabricCanvas = new fabric.Canvas('canvas', {
@@ -45,6 +79,46 @@ const ShawlCustomizer = () => {
       loadShawlImage(canvas, selectedShawl);
     }
   }, [selectedShawl]);
+
+  const handlePayment = () => {
+    if (!currentUser?.deliveryAddress) {
+      toast.error('Please update your delivery address in profile page');
+      return;
+    }
+
+    if (!size || quantity < 1) {
+      toast.error('Please select size,and valid quantity.');
+      return;
+    }
+
+    const customizedImage = base64ToFile(convertCanvasToImage())
+
+    if (!customizedImage) {
+      toast.error('Please add a design to your product.');
+      return;
+    }
+
+    localStorage.setItem("customizedShawlOrder", JSON.stringify({
+      size, quantity, customizedImage: convertCanvasToImage()
+    }));
+
+    const oderId = uuid()
+
+    const paymentRequest = {
+      amount: 1200 * quantity * 100, // Convert NPR to paisa
+      purchase_order_id: oderId,
+      purchase_order_name: `order-${oderId}`,
+      customer_info: {
+        name: currentUser.name,
+        email: currentUser.email,
+        phone: currentUser.phoneNumber,
+      },
+      return_url: `${window.location.origin}/shop/checkout`,
+      website_url: window.location.origin,
+    };
+
+    initiate(paymentRequest);
+  };
 
   const loadShawlImage = (fabricCanvas, src) => {
     if (!src) return;
@@ -163,6 +237,12 @@ const ShawlCustomizer = () => {
     link.click();
   };
 
+
+
+  const toggleOpen = () => {
+    setOpenModal(!openModal)
+  };
+
   return (
     <div className='p-10'>
       <Typography variant='h4' className='text-center mb-2'>
@@ -244,19 +324,72 @@ const ShawlCustomizer = () => {
 
             <Button
               onClick={downloadCanvasAsImage}
-              color='green'
+              color='blue-gray'
               fullWidth
               className='rounded-md'>
               Download Design
             </Button>
 
-            <AddToCartDialog
-              isCustomization
-              convertCanvasToImage={convertCanvasToImage}
-            />
+            <Button onClick={toggleOpen} color='green'>
+              Buy Now
+            </Button>
           </div>
         </div>
       </div>
+
+
+      <Dialog open={openModal} handler={toggleOpen} size='md'>
+        <DialogHeader>Order Now</DialogHeader>
+
+        <DialogBody className='space-y-5'>
+          {/* Size */}
+          <div>
+
+            {
+              initiationError && (
+                    <Alert color="red">
+                      {initiationError}
+                    </Alert>
+                )
+            }
+
+            <Select
+                label='Select Size'
+                value={size}
+                onChange={(val) => setSize(val)}>
+              {SIZES?.map(size => (
+                  <Option key={size} value={size}>
+                    {size}
+                  </Option>
+              ))}
+            </Select>
+          </div>
+
+          {/* Quantity */}
+          <div>
+            <Input
+                label='Quantity'
+                type='number'
+                min={1}
+                value={quantity}
+                onChange={(e) => {
+                  setQuantity(e.target.value);
+                }}
+            />
+          </div>
+
+
+        </DialogBody>
+
+        <DialogFooter className='flex gap-3'>
+          <Button variant='outlined' onClick={toggleOpen}>
+            Cancel
+          </Button>
+          <Button onClick={handlePayment} loading={isKhaltiLoading}>
+            Place Order
+          </Button>
+        </DialogFooter>
+      </Dialog>
     </div>
   );
 };

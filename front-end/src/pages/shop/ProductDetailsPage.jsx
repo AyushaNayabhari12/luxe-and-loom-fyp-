@@ -10,7 +10,7 @@ import {
 } from '../../hooks/useFetchProducts';
 import { formatImageUrl } from '../../utils';
 
-import AddToCartDialog from './AddToCartDialog';
+import AddToCartDialog from '../../components/shop/AddToCartDialog.jsx';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();

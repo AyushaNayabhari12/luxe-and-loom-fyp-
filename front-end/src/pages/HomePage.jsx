@@ -177,8 +177,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <TestimonialSlider />
 
       {/* Footer */}
       <Footer />

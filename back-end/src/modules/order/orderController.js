@@ -1,13 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
-import { sendSuccessResponse } from '../../utils/apiResponseHandler.js';
-import { asyncErrorHandler } from '../../utils/asyncErrorHandler.js';
-import { createError } from '../../utils/createError.js';
+import { sendSuccessResponse } from '../../utils/index.js';
+import { asyncErrorHandler } from '../../utils/index.js';
+import { createError } from '../../utils/index.js';
 import { Product } from '../product/product.js';
 import { Order } from './Order.js';
 import { sendMail } from '../../utils/mail.js';
 import { FROM_EMAIL } from '../../config/index.js';
 import { logOrder } from '../recommendation/utils.js';
 import { deleteFile } from '../../utils/index.js';
+import {User} from "../user/user.js";
 
 // GET /orders/cart
 export const getCart = asyncErrorHandler(async (req, res) => {
@@ -37,11 +38,9 @@ export const getCart = asyncErrorHandler(async (req, res) => {
 // POST /orders/cart
 export const addToCart = asyncErrorHandler(async (req, res) => {
   const userId = req.userId;
-  const customizedImage = req?.file?.filename;
   const { productId, quantity, size, color } = req.body;
 
-  if (!quantity || !size) {
-    deleteFile(customizedImage);
+  if (!quantity || !size || !productId || !color) {
 
     return createError({
       res,
@@ -50,15 +49,6 @@ export const addToCart = asyncErrorHandler(async (req, res) => {
     });
   }
 
-  if (!customizedImage && (!productId || !color)) {
-    deleteFile(customizedImage);
-
-    return createError({
-      res,
-      statusCode: StatusCodes.BAD_REQUEST,
-      message: 'All fields are required',
-    });
-  }
 
   let cart = await Order.findOne({ user: userId, status: 'cart' });
 
@@ -75,9 +65,6 @@ export const addToCart = asyncErrorHandler(async (req, res) => {
         item.size === size &&
         item.color === color
       );
-    } else if (customizedImage) {
-      // For customized product (based on image matching)
-      return item.customizedImage === customizedImage && item.size === size;
     }
     return false;
   });
@@ -91,13 +78,7 @@ export const addToCart = asyncErrorHandler(async (req, res) => {
       color,
     };
 
-    if (productId) {
-      newItem.product = productId;
-    } else if (customizedImage) {
-      newItem.price = 1200;
-      newItem.customizedImage = customizedImage;
-    }
-
+    newItem.product = productId;
     cart.orderItems.push(newItem);
   }
 
@@ -279,3 +260,78 @@ export const updateOrder = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({ res, data: order, message: 'Order status updated' });
 });
 
+// POST /orders/buy-now
+export const buyNowCustomizedShawl = asyncErrorHandler(async (req, res) => {
+  const userId = req.userId;
+  const customizedImage = req?.file?.filename;
+  const { quantity, size, transactionId } = req.body;
+
+  if (!customizedImage || !quantity || !size) {
+    deleteFile(customizedImage);
+
+    return createError({
+      res,
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: 'All fields are required',
+    });
+  }
+
+  const newItem = {
+    quantity,
+    size,
+    price: 1200,
+    customizedImage
+  };
+
+  const user = await User.findById(userId)
+
+  let cart = new Order({
+    user: userId,
+    orderItems: [newItem],
+    status: 'checkout',
+    transactionId,
+    deliveryAddress: user.deliveryAddress,
+  });
+
+  cart = await cart.save();
+
+
+
+  const htmlBody = `
+  <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <p>Dear ${user?.name},</p>
+    <p>Thank you for your order with <strong>Luxe and Loom</strong>!</p>
+    <p>Your order has been successfully placed. Here are your order details:</p>
+
+    <ul>
+      ${cart.orderItems
+      .map(
+          item => `
+        <li>
+          <strong>${
+             'Customized Shawl'
+          }</strong> - Qty: ${item.quantity} - NPR ${
+              item?.price * item.quantity
+          }
+        </li>`
+      )
+      .join('')}
+    </ul>
+
+    <p><strong>Total:</strong> NPR ${cart.total}</p>
+
+    <p>Thank you for shopping with us!<br/>The <strong>Luxe and Loom</strong> Team</p>
+  </div>
+`;
+
+  sendMail({
+    from: FROM_EMAIL,
+    to: user.email,
+    subject: 'Order Confirmation - Luxe and Loom',
+    html: htmlBody,
+  });
+
+  logOrder(userId, cart._id);
+
+  sendSuccessResponse({ res, data: cart, message: 'Item added to cart' });
+})

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken } from '../../middlewares/auth.js';
 import {
-  addToCart,
+  addToCart, buyNowCustomizedShawl,
   checkout,
   getAllOrderByUserId,
   getAllOrders,
@@ -21,8 +21,10 @@ orderRouter.route('/').get(getAllOrders);
 
 orderRouter
   .route('/cart')
-  .post(upload.single('customizedImage'), addToCart)
+  .post(upload.single('file'), addToCart)
   .get(getCart);
+
+orderRouter.route('/buy-now').post(upload.single('customizedImage'), buyNowCustomizedShawl)
 
 orderRouter.route('/cart/checkout').post(checkout);
 

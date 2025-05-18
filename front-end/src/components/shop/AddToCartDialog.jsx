@@ -11,13 +11,11 @@ import {
 } from '@material-tailwind/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { postRequest } from '../../utils/apiHandler';
-import { COLORS, SIZES } from '../../config';
+import { postRequest } from '../../utils/apiHandler.js';
+import { COLORS, SIZES } from '../../config/index.js';
 
 const AddToCartDialog = ({
   product = {},
-  isCustomization,
-  convertCanvasToImage,
 }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -52,19 +50,7 @@ const AddToCartDialog = ({
     }));
   };
 
-  function base64ToFile(base64String, filename = 'customized_shawl.png') {
-    const arr = base64String.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]); // decode Base64 string
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
 
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-
-    return new File([u8arr], filename, { type: mime });
-  }
 
   const handleSubmit = async () => {
     try {
@@ -73,22 +59,13 @@ const AddToCartDialog = ({
         return;
       }
 
-      if (!isCustomization && !cartDetails.color) {
+      if (!cartDetails.color) {
         toast.error('Please select a color.');
         return;
       }
 
-      if (!isCustomization && cartDetails.quantity > product.stock) {
+      if ( cartDetails.quantity > product.stock) {
         toast.error('Entered quantity exceeds available stock.');
-        return;
-      }
-
-      const customizedImage = isCustomization
-        ? base64ToFile(convertCanvasToImage())
-        : '';
-
-      if (isCustomization && !customizedImage) {
-        toast.error('Please add a design to your product.');
         return;
       }
 
@@ -100,7 +77,6 @@ const AddToCartDialog = ({
       formData.append('size', cartDetails.size);
       formData.append('color', cartDetails.color);
       formData.append('quantity', cartDetails.quantity);
-      formData.append('customizedImage', customizedImage);
 
       const res = await postRequest({
         endpoint: '/orders/cart',
@@ -157,7 +133,6 @@ const AddToCartDialog = ({
           </div>
 
           {/* Color */}
-          {!isCustomization && (
             <div className='flex gap-x-5 mt-4'>
               <div>
                 <div className='grid grid-cols-9 gap-6'>
@@ -177,7 +152,6 @@ const AddToCartDialog = ({
                 </div>
               </div>
             </div>
-          )}
         </DialogBody>
 
         <DialogFooter className='flex gap-3'>

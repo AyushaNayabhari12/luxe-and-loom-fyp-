@@ -5,10 +5,12 @@ import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { getRequest } from '../../utils/apiHandler';
 import OrderInvoice from './OrderInvoice';
+import useAuthContext from "../../hooks/useAuthContext.js";
 
 const OrderListTable = ({ queryKey, endpoint }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const {currentUser} = useAuthContext()
 
   const handleOpenDialog = () => {
     setOpenDialog(!openDialog);
@@ -20,6 +22,7 @@ const OrderListTable = ({ queryKey, endpoint }) => {
       const res = await getRequest({ endpoint });
       return res?.data || [];
     },
+    enabled: !!currentUser?._id
   });
 
   const TABLE_HEAD = [
