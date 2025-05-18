@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
-import { generateTextEmbedding } from '../recommendation/vectorEmbeddings.js';
-import { getProductFeatureInSingleString } from '../../utils/index.js';
+import mongoose from "mongoose";
+import { generateTextEmbedding } from "../recommendation/vectorEmbeddings.js";
+import { getProductFeatureInSingleString } from "../../utils/index.js";
 
-const PRODUCT_CATEGORIES = ['Shawl', 'Scarf', 'Wrap'];
+const PRODUCT_CATEGORIES = ["Shawl", "Scarf", "Wrap"];
 
 const productSchema = new mongoose.Schema(
   {
@@ -27,11 +27,11 @@ const productSchema = new mongoose.Schema(
     category: {
       type: String,
       enum: PRODUCT_CATEGORIES,
-      default: 'Shawl',
+      default: "Shawl",
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     sizes: {
@@ -50,10 +50,10 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-productSchema.pre('save', async function (next) {
+productSchema.pre("save", async function (next) {
   if (this.isDeleted) return next();
 
   const text = getProductFeatureInSingleString(this);
@@ -65,5 +65,4 @@ productSchema.pre('save', async function (next) {
   next();
 });
 
-export const Product = mongoose.model('Product', productSchema);
-
+export const Product = mongoose.model("Product", productSchema);

@@ -1,16 +1,16 @@
-import { Alert, Button, Typography } from '@material-tailwind/react';
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { useState } from 'react';
-import { v4 as uuid } from 'uuid';
-import { getRequest } from '../../utils/apiHandler';
-import OrderInvoice from './OrderInvoice';
+import { Alert, Button, Typography } from "@material-tailwind/react";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { useState } from "react";
+import { v4 as uuid } from "uuid";
+import { getRequest } from "../../utils/apiHandler";
+import OrderInvoice from "./OrderInvoice";
 import useAuthContext from "../../hooks/useAuthContext.js";
 
 const OrderListTable = ({ queryKey, endpoint }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const {currentUser} = useAuthContext()
+  const { currentUser } = useAuthContext();
 
   const handleOpenDialog = () => {
     setOpenDialog(!openDialog);
@@ -22,16 +22,16 @@ const OrderListTable = ({ queryKey, endpoint }) => {
       const res = await getRequest({ endpoint });
       return res?.data || [];
     },
-    enabled: !!currentUser?._id
+    enabled: !!currentUser?._id,
   });
 
   const TABLE_HEAD = [
-    'Order ID',
-    'Total',
-    'Date',
-    'Delivery Address',
-    'Transaction Id',
-    'Actions',
+    "Order ID",
+    "Total",
+    "Date",
+    "Delivery Address",
+    "Transaction Id",
+    "Actions",
   ];
 
   if (isLoading) return <div>Fetching Orders...</div>;
@@ -41,18 +41,20 @@ const OrderListTable = ({ queryKey, endpoint }) => {
       {orders?.length === 0 ? (
         <Alert>No orders found.</Alert>
       ) : (
-        <div className='overflow-auto'>
-          <table className='w-full table-auto text-left '>
+        <div className="overflow-auto">
+          <table className="w-full table-auto text-left ">
             <thead>
               <tr>
-                {TABLE_HEAD.map(head => (
+                {TABLE_HEAD.map((head) => (
                   <th
                     key={uuid()}
-                    className='border-y border-blue-gray-100 bg-blue-gray-50/50 p-4'>
+                    className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
+                  >
                     <Typography
-                      variant='small'
-                      color='blue-gray'
-                      className='font-normal leading-none opacity-70'>
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal leading-none opacity-70"
+                    >
                       {head}
                     </Typography>
                   </th>
@@ -71,58 +73,64 @@ const OrderListTable = ({ queryKey, endpoint }) => {
 
                 const isLast = index === orders.length - 1;
                 const classes = isLast
-                  ? 'p-4'
-                  : 'p-4 border-b border-blue-gray-50';
+                  ? "p-4"
+                  : "p-4 border-b border-blue-gray-50";
 
                 return (
                   <tr key={_id}>
                     <td className={classes}>
                       <Typography
-                        variant='small'
-                        className='font-normal opacity-70'>
+                        variant="small"
+                        className="font-normal opacity-70"
+                      >
                         {_id?.toUpperCase()}
                       </Typography>
                     </td>
 
                     <td className={classes}>
                       <Typography
-                        variant='small'
-                        className='font-normal opacity-70'>
+                        variant="small"
+                        className="font-normal opacity-70"
+                      >
                         NPR {total}
                       </Typography>
                     </td>
 
                     <td className={classes}>
                       <Typography
-                        variant='small'
-                        className='font-normal opacity-70'>
-                        {format(new Date(createdAt), 'MMMM d, yyyy')}
+                        variant="small"
+                        className="font-normal opacity-70"
+                      >
+                        {format(new Date(createdAt), "MMMM d, yyyy")}
                       </Typography>
                     </td>
 
                     <td className={classes}>
                       <Typography
-                        variant='small'
-                        className='font-normal opacity-70'>
+                        variant="small"
+                        className="font-normal opacity-70"
+                      >
                         {deliveryAddress}
                       </Typography>
                     </td>
 
                     <td className={classes}>
                       <Typography
-                        variant='small'
-                        className='font-normal opacity-70'>
+                        variant="small"
+                        className="font-normal opacity-70"
+                      >
                         {transactionId}
                       </Typography>
                     </td>
 
                     <td className={classes}>
                       <Button
-                        size='sm'
+                        size="sm"
                         onClick={() => {
                           setSelectedOrder(order);
                           handleOpenDialog();
-                        }}>
+                        }}
+                      >
                         View Items
                       </Button>
                     </td>
@@ -146,4 +154,3 @@ const OrderListTable = ({ queryKey, endpoint }) => {
 };
 
 export default OrderListTable;
-

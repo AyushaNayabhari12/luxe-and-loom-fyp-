@@ -2,38 +2,39 @@ import {
   Alert,
   Button,
   Dialog,
-  DialogBody, DialogFooter,
+  DialogBody,
+  DialogFooter,
   DialogHeader,
   Input,
   Option,
   Select,
-  Typography
-} from '@material-tailwind/react';
-import * as fabric from 'fabric';
-import React, { useEffect, useRef, useState} from 'react';
-import {useKhalti} from "../khalti/useKhalti.js";
-import {toast} from "sonner";
-import {useNavigate} from "react-router";
+  Typography,
+} from "@material-tailwind/react";
+import * as fabric from "fabric";
+import React, { useEffect, useRef, useState } from "react";
+import { useKhalti } from "../khalti/useKhalti.js";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
 import useAuthContext from "../hooks/useAuthContext.js";
-import {v4 as uuid } from 'uuid';
-import {SIZES} from "../config/index.js";
+import { v4 as uuid } from "uuid";
+import { SIZES } from "../config/index.js";
 
-const patterns = ['/pattern1.webp'];
+const patterns = ["/pattern1.webp"];
 
 const shawlImages = [
-  '/shawl2.webp',
-  '/shawl3.webp',
-  '/shawl4.webp',
-  '/shawl7.webp',
-  '/shawl9.webp',
-  '/shawl10.webp',
+  "/shawl2.webp",
+  "/shawl3.webp",
+  "/shawl4.webp",
+  "/shawl7.webp",
+  "/shawl9.webp",
+  "/shawl10.webp",
 ];
 
 const ShawlCustomizer = () => {
   const canvasRef = useRef(null);
   const [canvas, setCanvas] = useState(null);
-  const [textInput, setTextInput] = useState('');
-  const [textColor, setTextColor] = useState('#000000');
+  const [textInput, setTextInput] = useState("");
+  const [textColor, setTextColor] = useState("#000000");
   const [selectedShawl, setSelectedShawl] = useState(shawlImages[0]);
   const navigate = useNavigate();
   const { currentUser } = useAuthContext();
@@ -47,27 +48,27 @@ const ShawlCustomizer = () => {
     isLoading: isKhaltiLoading,
   } = useKhalti({
     onSuccess: () => {
-      navigate('/shop');
+      navigate("/shop");
     },
-    onError: error => {
-      toast.error('Unable to checkout at the moment, please try again later.');
-      console.error('Payment error:', error.message);
+    onError: (error) => {
+      toast.error("Unable to checkout at the moment, please try again later.");
+      console.error("Payment error:", error.message);
     },
   });
 
   useEffect(() => {
-    const fabricCanvas = new fabric.Canvas('canvas', {
+    const fabricCanvas = new fabric.Canvas("canvas", {
       height: 500,
       width: 700,
-      backgroundColor: '#fff',
+      backgroundColor: "#fff",
     });
 
     setCanvas(fabricCanvas);
     loadShawlImage(fabricCanvas, selectedShawl);
 
-    fabricCanvas.on('selection:created', updateTextColorFromSelection);
-    fabricCanvas.on('selection:updated', updateTextColorFromSelection);
-    fabricCanvas.on('selection:cleared', () => setTextColor('#000000'));
+    fabricCanvas.on("selection:created", updateTextColorFromSelection);
+    fabricCanvas.on("selection:updated", updateTextColorFromSelection);
+    fabricCanvas.on("selection:cleared", () => setTextColor("#000000"));
 
     return () => {
       fabricCanvas.dispose();
@@ -82,27 +83,32 @@ const ShawlCustomizer = () => {
 
   const handlePayment = () => {
     if (!currentUser?.deliveryAddress) {
-      toast.error('Please update your delivery address in profile page');
+      toast.error("Please update your delivery address in profile page");
       return;
     }
 
     if (!size || quantity < 1) {
-      toast.error('Please select size,and valid quantity.');
+      toast.error("Please select size,and valid quantity.");
       return;
     }
 
-    const customizedImage = base64ToFile(convertCanvasToImage())
+    const customizedImage = base64ToFile(convertCanvasToImage());
 
     if (!customizedImage) {
-      toast.error('Please add a design to your product.');
+      toast.error("Please add a design to your product.");
       return;
     }
 
-    localStorage.setItem("customizedShawlOrder", JSON.stringify({
-      size, quantity, customizedImage: convertCanvasToImage()
-    }));
+    localStorage.setItem(
+      "customizedShawlOrder",
+      JSON.stringify({
+        size,
+        quantity,
+        customizedImage: convertCanvasToImage(),
+      }),
+    );
 
-    const oderId = uuid()
+    const oderId = uuid();
 
     const paymentRequest = {
       amount: 1200 * quantity * 100, // Convert NPR to paisa
@@ -123,7 +129,7 @@ const ShawlCustomizer = () => {
   const loadShawlImage = (fabricCanvas, src) => {
     if (!src) return;
 
-    const imgEl = document.createElement('img');
+    const imgEl = document.createElement("img");
     imgEl.src = src;
 
     imgEl.onload = function () {
@@ -143,30 +149,30 @@ const ShawlCustomizer = () => {
         top: (canvasHeight - imgHeight * scale) / 2, // center vertically
         selectable: false,
         evented: false,
-        objectType: 'shawl',
+        objectType: "shawl",
       });
 
       const existingShawl = fabricCanvas
         .getObjects()
-        .find(obj => obj.objectType === 'shawl');
+        .find((obj) => obj.objectType === "shawl");
 
       if (existingShawl) fabricCanvas.remove(existingShawl);
 
-      img.set({ objectType: 'shawl' });
+      img.set({ objectType: "shawl" });
       fabricCanvas.add(img);
       // fabricCanvas.sendToBack(img);
     };
   };
 
-  const updateTextColorFromSelection = e => {
+  const updateTextColorFromSelection = (e) => {
     const active = e.selected?.[0] || canvas?.getActiveObject();
-    if (active && active.type === 'text') {
+    if (active && active.type === "text") {
       setTextColor(active.fill);
     }
   };
 
-  const addPattern = src => {
-    const imgEl = document.createElement('img');
+  const addPattern = (src) => {
+    const imgEl = document.createElement("img");
     imgEl.src = src;
 
     imgEl.onload = function () {
@@ -178,7 +184,7 @@ const ShawlCustomizer = () => {
         scaleY: 0.5,
         hasBorders: true,
         hasControls: true,
-        objectType: 'pattern',
+        objectType: "pattern",
       });
       canvas.add(img);
       canvas.centerObject(img);
@@ -192,11 +198,11 @@ const ShawlCustomizer = () => {
       top: 150,
       fontSize: 24,
       fill: textColor,
-      objectType: 'text',
+      objectType: "text",
     });
     canvas.add(text);
     canvas.bringToFront(text);
-    setTextInput('');
+    setTextInput("");
   };
 
   const deleteSelected = () => {
@@ -204,13 +210,13 @@ const ShawlCustomizer = () => {
     if (active) canvas.remove(active);
   };
 
-  const handleColorChange = e => {
+  const handleColorChange = (e) => {
     const newColor = e.target.value;
     setTextColor(newColor);
 
     const active = canvas.getActiveObject();
-    if (active && active.type === 'text') {
-      active.set('fill', newColor);
+    if (active && active.type === "text") {
+      active.set("fill", newColor);
       canvas.renderAll();
     }
   };
@@ -218,7 +224,7 @@ const ShawlCustomizer = () => {
   const convertCanvasToImage = () => {
     if (!canvas) return;
     const dataURL = canvas.toDataURL({
-      format: 'png', // or 'jpeg'
+      format: "png", // or 'jpeg'
       quality: 1,
     });
 
@@ -230,38 +236,36 @@ const ShawlCustomizer = () => {
 
     if (!dataURL) return;
 
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = dataURL;
     link.download =
-      Math.floor(Math.random() * 123456789) + '_customized_shawl.png';
+      Math.floor(Math.random() * 123456789) + "_customized_shawl.png";
     link.click();
   };
 
-
-
   const toggleOpen = () => {
-    setOpenModal(!openModal)
+    setOpenModal(!openModal);
   };
 
   return (
-    <div className='p-10'>
-      <Typography variant='h4' className='text-center mb-2'>
+    <div className="p-10">
+      <Typography variant="h4" className="text-center mb-2">
         Customize
       </Typography>
-      <Typography className='text-center text-gray-600 mb-8'>
+      <Typography className="text-center text-gray-600 mb-8">
         Review your customized shawl, adjust options, and proceed to checkout
         from the cart page.
       </Typography>
 
-      <div className='flex flex-col md:flex-row gap-6 p-20'>
-        <div className='flex justify-center'>
-          <canvas id='canvas' ref={canvasRef}></canvas>
+      <div className="flex flex-col md:flex-row gap-6 p-20">
+        <div className="flex justify-center">
+          <canvas id="canvas" ref={canvasRef}></canvas>
         </div>
 
-        <div className='flex flex-col gap-4 w-full max-w-md'>
-          <Typography variant='h6'>Choose Shawl</Typography>
-          <div className='flex gap-3'>
-            {shawlImages.map(shawl => (
+        <div className="flex flex-col gap-4 w-full max-w-md">
+          <Typography variant="h6">Choose Shawl</Typography>
+          <div className="flex gap-3">
+            {shawlImages.map((shawl) => (
               <img
                 key={shawl}
                 src={shawl}
@@ -269,98 +273,94 @@ const ShawlCustomizer = () => {
                 onClick={() => setSelectedShawl(shawl)}
                 className={`w-20 h-20 object-cover rounded-md border-2 cursor-pointer ${
                   selectedShawl === shawl
-                    ? 'border-blue-600'
-                    : 'border-gray-200'
+                    ? "border-blue-600"
+                    : "border-gray-200"
                 }`}
               />
             ))}
           </div>
 
-          <Typography variant='h6'>Choose Pattern</Typography>
-          <div className='flex gap-3 flex-wrap'>
-            {patterns.map(p => (
+          <Typography variant="h6">Choose Pattern</Typography>
+          <div className="flex gap-3 flex-wrap">
+            {patterns.map((p) => (
               <img
                 key={p}
                 src={p}
                 alt={p}
-                className='w-20 h-20 cursor-pointer border border-gray-200 hover:border-black rounded-md object-cover'
+                className="w-20 h-20 cursor-pointer border border-gray-200 hover:border-black rounded-md object-cover"
                 onClick={() => addPattern(p)}
               />
             ))}
           </div>
 
-          <div className='flex items-center gap-3'>
+          <div className="flex items-center gap-3">
             <Input
-              label='Enter text'
+              label="Enter text"
               value={textInput}
-              onChange={e => setTextInput(e.target.value)}
-              color='gray'
+              onChange={(e) => setTextInput(e.target.value)}
+              color="gray"
             />
 
             <input
-              type='color'
+              type="color"
               value={textColor}
               onChange={handleColorChange}
-              className='w-[80px] h-full border rounded'
+              className="w-[80px] h-full border rounded"
             />
           </div>
 
-          <div className='grid grid-cols-2 gap-3 mt-4'>
+          <div className="grid grid-cols-2 gap-3 mt-4">
             <Button
               onClick={addText}
-              color='blue'
+              color="blue"
               fullWidth
-              className='rounded-md'>
+              className="rounded-md"
+            >
               Add Text
             </Button>
 
             <Button
               onClick={deleteSelected}
-              color='red'
+              color="red"
               fullWidth
-              className='rounded-md'>
+              className="rounded-md"
+            >
               Delete Selected
             </Button>
 
             <Button
               onClick={downloadCanvasAsImage}
-              color='blue-gray'
+              color="blue-gray"
               fullWidth
-              className='rounded-md'>
+              className="rounded-md"
+            >
               Download Design
             </Button>
 
-            <Button onClick={toggleOpen} color='green'>
+            <Button onClick={toggleOpen} color="green">
               Buy Now
             </Button>
           </div>
         </div>
       </div>
 
-
-      <Dialog open={openModal} handler={toggleOpen} size='md'>
+      <Dialog open={openModal} handler={toggleOpen} size="md">
         <DialogHeader>Order Now</DialogHeader>
 
-        <DialogBody className='space-y-5'>
+        <DialogBody className="space-y-5">
           {/* Size */}
           <div>
-
-            {
-              initiationError && (
-                    <Alert color="red">
-                      {initiationError}
-                    </Alert>
-                )
-            }
+            {initiationError && <Alert color="red">{initiationError}</Alert>}
 
             <Select
-                label='Select Size'
-                value={size}
-                onChange={(val) => setSize(val)}>
-              {SIZES?.map(size => (
-                  <Option key={size} value={size}>
-                    {size}
-                  </Option>
+              label="Select Size"
+              value={size}
+              onChange={(val) => setSize(val)}
+            >
+              {SIZES?.map((size) => (
+                <Option key={size} value={size}>
+                  {size}
+                </Option>
               ))}
             </Select>
           </div>
@@ -368,21 +368,19 @@ const ShawlCustomizer = () => {
           {/* Quantity */}
           <div>
             <Input
-                label='Quantity'
-                type='number'
-                min={1}
-                value={quantity}
-                onChange={(e) => {
-                  setQuantity(e.target.value);
-                }}
+              label="Quantity"
+              type="number"
+              min={1}
+              value={quantity}
+              onChange={(e) => {
+                setQuantity(e.target.value);
+              }}
             />
           </div>
-
-
         </DialogBody>
 
-        <DialogFooter className='flex gap-3'>
-          <Button variant='outlined' onClick={toggleOpen}>
+        <DialogFooter className="flex gap-3">
+          <Button variant="outlined" onClick={toggleOpen}>
             Cancel
           </Button>
           <Button onClick={handlePayment} loading={isKhaltiLoading}>
@@ -395,4 +393,3 @@ const ShawlCustomizer = () => {
 };
 
 export default ShawlCustomizer;
-

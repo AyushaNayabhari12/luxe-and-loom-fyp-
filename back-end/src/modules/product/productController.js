@@ -3,11 +3,11 @@ import {
   createError,
   deleteFile,
   sendSuccessResponse,
-} from '../../utils/index.js';
-import { StatusCodes } from 'http-status-codes';
-import { Product } from './product.js';
-import { ApiFeatures } from '../../utils/apiFeature.js';
-import { logProductView, logSearch } from '../recommendation/utils.js';
+} from "../../utils/index.js";
+import { StatusCodes } from "http-status-codes";
+import { Product } from "./product.js";
+import { ApiFeatures } from "../../utils/apiFeature.js";
+import { logProductView, logSearch } from "../recommendation/utils.js";
 
 // POST /products
 export const createProduct = asyncErrorHandler(async (req, res) => {
@@ -16,7 +16,7 @@ export const createProduct = asyncErrorHandler(async (req, res) => {
 
   const userId = req.userId;
 
-  const images = req.files?.map(file => file.filename);
+  const images = req.files?.map((file) => file.filename);
 
   if (
     !name ||
@@ -32,7 +32,7 @@ export const createProduct = asyncErrorHandler(async (req, res) => {
 
     createError({
       message:
-        'All required fields must be provided including at least one image',
+        "All required fields must be provided including at least one image",
       statusCode: StatusCodes.BAD_REQUEST,
     });
 
@@ -57,7 +57,7 @@ export const createProduct = asyncErrorHandler(async (req, res) => {
     res,
     statusCode: StatusCodes.CREATED,
     data: product,
-    message: 'Product created successfully',
+    message: "Product created successfully",
   });
 });
 
@@ -71,30 +71,30 @@ export const getAllProducts = asyncErrorHandler(async (req, res) => {
 
   if (keyword) {
     searchQuery.$or = [
-      { name: { $regex: keyword, $options: 'i' } },
-      { description: { $regex: keyword, $options: 'i' } },
-      { category: { $regex: keyword, $options: 'i' } },
+      { name: { $regex: keyword, $options: "i" } },
+      { description: { $regex: keyword, $options: "i" } },
+      { category: { $regex: keyword, $options: "i" } },
     ];
   }
 
   if (sizes) {
-    const sizeArray = sizes.split(',');
-    searchQuery['sizes'] = { $all: sizeArray };
+    const sizeArray = sizes.split(",");
+    searchQuery["sizes"] = { $all: sizeArray };
   }
 
   if (colors) {
-    const colorArray = colors.split(',');
-    searchQuery['colors'] = { $all: colorArray };
+    const colorArray = colors.split(",");
+    searchQuery["colors"] = { $all: colorArray };
   }
 
   if (price) {
-    const [min, max] = price.split('-').map(Number);
-    searchQuery['basePrice'] = { $gte: min, $lte: max };
+    const [min, max] = price.split("-").map(Number);
+    searchQuery["basePrice"] = { $gte: min, $lte: max };
   }
 
   const features = new ApiFeatures(
-    Product.find(searchQuery).populate('user', 'name'),
-    req.query
+    Product.find(searchQuery).populate("user", "name"),
+    req.query,
   ).paginate();
 
   const products = await features.query;
@@ -108,7 +108,7 @@ export const getAllProducts = asyncErrorHandler(async (req, res) => {
       products,
       pagination,
     },
-    message: 'Products fetched successfully',
+    message: "Products fetched successfully",
   });
 });
 
@@ -122,7 +122,7 @@ export const getProductById = asyncErrorHandler(async (req, res) => {
     createError({
       res,
       statusCode: StatusCodes.NOT_FOUND,
-      message: 'Product not found',
+      message: "Product not found",
     });
     return;
   }
@@ -133,7 +133,7 @@ export const getProductById = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({
     res,
     data: product,
-    message: 'Product fetched successfully',
+    message: "Product fetched successfully",
   });
 });
 
@@ -152,7 +152,7 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
     colors,
   } = req.body;
 
-  const newImages = req.files?.map(file => file.filename) || [];
+  const newImages = req.files?.map((file) => file.filename) || [];
 
   const finalImages = [...newImages, ...images];
 
@@ -160,7 +160,7 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
     newImages?.forEach(deleteFile);
 
     createError({
-      message: 'All required fields must be provided including images',
+      message: "All required fields must be provided including images",
       statusCode: StatusCodes.BAD_REQUEST,
     });
     return;
@@ -172,7 +172,7 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
     createError({
       res,
       statusCode: StatusCodes.NOT_FOUND,
-      message: 'Product not found',
+      message: "Product not found",
     });
     return;
   }
@@ -197,7 +197,7 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({
     res,
     data: product,
-    message: 'Product updated successfully',
+    message: "Product updated successfully",
   });
 });
 
@@ -212,14 +212,14 @@ export const deleteProductById = asyncErrorHandler(async (req, res) => {
     createError({
       res,
       statusCode: StatusCodes.NOT_FOUND,
-      message: 'Product not found',
+      message: "Product not found",
     });
     return;
   }
 
   sendSuccessResponse({
     res,
-    message: 'Product deleted successfully',
+    message: "Product deleted successfully",
   });
 });
 
@@ -236,7 +236,7 @@ export const getFeaturedCollection = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({
     res,
     data: products,
-    message: 'Featured Collection',
+    message: "Featured Collection",
   });
 });
 
@@ -275,7 +275,6 @@ export const getSimilarProducts = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({
     res,
     data: products,
-    message: 'Similar Products',
+    message: "Similar Products",
   });
 });
-

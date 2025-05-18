@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { KHALTI_CONFIG, khaltiClient } from './khaliConfig';
+import { useState } from "react";
+import { KHALTI_CONFIG, khaltiClient } from "./khaliConfig";
 
 export function useKhalti({ onSuccess, onError, autoRedirect = true } = {}) {
   const [pidx, setPidx] = useState(null);
@@ -7,14 +7,14 @@ export function useKhalti({ onSuccess, onError, autoRedirect = true } = {}) {
   const [statusError, setStatusError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const initiate = async data => {
+  const initiate = async (data) => {
     setIsLoading(true);
     setInitiationError(null);
 
     try {
       const response = await khaltiClient.post(
         `${KHALTI_CONFIG.baseUrl}/epayment/initiate/`,
-        data
+        data,
       );
 
       const paymentResponse = response.data;
@@ -36,7 +36,7 @@ export function useKhalti({ onSuccess, onError, autoRedirect = true } = {}) {
 
   const checkPaymentStatus = async () => {
     if (!pidx) {
-      throw new Error('Payment ID not found');
+      throw new Error("Payment ID not found");
     }
 
     setIsLoading(true);
@@ -45,11 +45,11 @@ export function useKhalti({ onSuccess, onError, autoRedirect = true } = {}) {
     try {
       const response = await khaltiClient.post(
         `${KHALTI_CONFIG.baseUrl}/epayment/lookup/`,
-        { pidx }
+        { pidx },
       );
       const paymentStatus = response.data;
 
-      if (paymentStatus.status === 'Completed') {
+      if (paymentStatus.status === "Completed") {
         if (onSuccess) onSuccess(paymentStatus);
       }
 
@@ -71,4 +71,3 @@ export function useKhalti({ onSuccess, onError, autoRedirect = true } = {}) {
     isLoading,
   };
 }
-

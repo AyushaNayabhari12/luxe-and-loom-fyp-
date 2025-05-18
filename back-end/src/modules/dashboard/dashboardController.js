@@ -1,9 +1,9 @@
-import { sendSuccessResponse } from '../../utils/apiResponseHandler.js';
-import { asyncErrorHandler } from '../../utils/asyncErrorHandler.js';
-import { Order } from '../order/order.js';
-import { Product } from '../product/product.js';
-import { User } from '../user/user.js';
-import dayjs from 'dayjs';
+import { sendSuccessResponse } from "../../utils/apiResponseHandler.js";
+import { asyncErrorHandler } from "../../utils/asyncErrorHandler.js";
+import { Order } from "../order/order.js";
+import { Product } from "../product/product.js";
+import { User } from "../user/user.js";
+import dayjs from "dayjs";
 
 // GET /dashboard/metrics
 export const getDashboardMetrics = asyncErrorHandler(async (req, res) => {
@@ -16,7 +16,7 @@ export const getDashboardMetrics = asyncErrorHandler(async (req, res) => {
         {
           $group: {
             _id: null,
-            totalRevenue: { $sum: '$total' },
+            totalRevenue: { $sum: "$total" },
           },
         },
       ]),
@@ -32,7 +32,7 @@ export const getDashboardMetrics = asyncErrorHandler(async (req, res) => {
       totalOrders,
       totalRevenue,
     },
-    message: 'Dashboard metrics fetched successfully',
+    message: "Dashboard metrics fetched successfully",
   });
 });
 
@@ -46,7 +46,7 @@ export const getProductCountByCategory = asyncErrorHandler(async (req, res) => {
     },
     {
       $group: {
-        _id: '$category',
+        _id: "$category",
         count: { $sum: 1 },
       },
     },
@@ -55,7 +55,7 @@ export const getProductCountByCategory = asyncErrorHandler(async (req, res) => {
     },
   ]);
 
-  const formatted = productCountByCategory.map(item => ({
+  const formatted = productCountByCategory.map((item) => ({
     category: item._id,
     count: item.count,
   }));
@@ -63,14 +63,14 @@ export const getProductCountByCategory = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({
     res,
     data: formatted,
-    message: 'Product count by category fetched successfully',
+    message: "Product count by category fetched successfully",
   });
 });
 
 // GET /dashboard/orders-over-time
 export const getOrdersOverTime = asyncErrorHandler(async (req, res) => {
-  const startOfYear = dayjs().startOf('year').toDate();
-  const endOfYear = dayjs().endOf('year').toDate();
+  const startOfYear = dayjs().startOf("year").toDate();
+  const endOfYear = dayjs().endOf("year").toDate();
 
   const orders = await Order.aggregate([
     {
@@ -83,33 +83,33 @@ export const getOrdersOverTime = asyncErrorHandler(async (req, res) => {
     },
     {
       $group: {
-        _id: { month: { $month: '$createdAt' } },
+        _id: { month: { $month: "$createdAt" } },
         count: { $sum: 1 },
       },
     },
     {
-      $sort: { '_id.month': 1 },
+      $sort: { "_id.month": 1 },
     },
   ]);
 
   const months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   // Ensure all months are present, even with 0 orders
   const monthlyData = months.map((month, idx) => {
-    const match = orders.find(o => o._id.month === idx + 1);
+    const match = orders.find((o) => o._id.month === idx + 1);
     return {
       month,
       count: match?.count || 0,
@@ -119,8 +119,6 @@ export const getOrdersOverTime = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({
     res,
     data: monthlyData,
-    message: 'Orders over time fetched successfully',
+    message: "Orders over time fetched successfully",
   });
 });
-
-

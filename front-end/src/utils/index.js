@@ -1,18 +1,17 @@
-import { SERVER_URL } from '../config';
+import { SERVER_URL } from "../config";
 
-export const formatImageUrl = url => {
+export const formatImageUrl = (url) => {
   if (!url) {
     return;
   }
 
-  if (typeof url === 'object') {
+  if (typeof url === "object") {
     return URL.createObjectURL(url);
   }
 
-  if (url.startsWith('https://')) {
+  if (url.startsWith("https://")) {
     return url;
   }
 
   return `${SERVER_URL}/${url}`;
 };
-

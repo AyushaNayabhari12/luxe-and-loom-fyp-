@@ -1,8 +1,8 @@
-import multer from 'multer';
+import multer from "multer";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const staticFolder = req.query.staticFolder || './public';
+    const staticFolder = req.query.staticFolder || "./public";
 
     return cb(null, staticFolder);
   },
@@ -17,4 +17,3 @@ const upload = multer({
 });
 
 export default upload;
-

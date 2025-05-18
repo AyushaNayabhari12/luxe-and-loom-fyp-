@@ -1,7 +1,8 @@
-import { Router } from 'express';
-import { authenticateToken } from '../../middlewares/auth.js';
+import { Router } from "express";
+import { authenticateToken } from "../../middlewares/auth.js";
 import {
-  addToCart, buyNowCustomizedShawl,
+  addToCart,
+  buyNowCustomizedShawl,
   checkout,
   getAllOrderByUserId,
   getAllOrders,
@@ -9,30 +10,28 @@ import {
   removeCartItem,
   updateCartItem,
   updateOrder,
-} from './orderController.js';
+} from "./orderController.js";
 
-import upload from '../../middlewares/fileUpload.js';
+import upload from "../../middlewares/fileUpload.js";
 
 const orderRouter = Router();
 
 orderRouter.use(authenticateToken);
 
-orderRouter.route('/').get(getAllOrders);
+orderRouter.route("/").get(getAllOrders);
+
+orderRouter.route("/cart").post(upload.single("file"), addToCart).get(getCart);
 
 orderRouter
-  .route('/cart')
-  .post(upload.single('file'), addToCart)
-  .get(getCart);
+  .route("/buy-now")
+  .post(upload.single("customizedImage"), buyNowCustomizedShawl);
 
-orderRouter.route('/buy-now').post(upload.single('customizedImage'), buyNowCustomizedShawl)
+orderRouter.route("/cart/checkout").post(checkout);
 
-orderRouter.route('/cart/checkout').post(checkout);
+orderRouter.route("/user/:userId").get(getAllOrderByUserId);
 
-orderRouter.route('/user/:userId').get(getAllOrderByUserId);
+orderRouter.route("/cart/:itemId").patch(updateCartItem).delete(removeCartItem);
 
-orderRouter.route('/cart/:itemId').patch(updateCartItem).delete(removeCartItem);
-
-orderRouter.route('/:orderId').patch(updateOrder);
+orderRouter.route("/:orderId").patch(updateOrder);
 
 export default orderRouter;
-

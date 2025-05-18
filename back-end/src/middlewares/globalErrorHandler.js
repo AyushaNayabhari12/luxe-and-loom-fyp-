@@ -1,10 +1,10 @@
 // this middleware handles the error globally
 const handleError = (error, req, res, next) => {
   error.statusCode = error.statusCode || 500;
-  error.status = error.status || 'error';
+  error.status = error.status || "error";
 
-  if (error.name === 'TokenExpiredError') {
-    error.message = 'Unauthorized: Token is expired';
+  if (error.name === "TokenExpiredError") {
+    error.message = "Unauthorized: Token is expired";
     error.statusCode = 401;
   }
 
@@ -13,10 +13,9 @@ const handleError = (error, req, res, next) => {
     message: error.message,
   });
 
-  console.error('Error:', error.stack);
+  console.error("Error:", error.stack);
 
   next();
 };
 
 export default handleError;
-

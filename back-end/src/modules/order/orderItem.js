@@ -1,9 +1,9 @@
-import { Schema } from 'mongoose';
+import { Schema } from "mongoose";
 
 const orderItemSchema = Schema({
   product: {
     type: Schema.Types.ObjectId,
-    ref: 'Product',
+    ref: "Product",
   },
   customizedImage: {
     type: String, // base64 or uploaded image URL
@@ -25,4 +25,3 @@ const orderItemSchema = Schema({
 });
 
 export default orderItemSchema;
-

@@ -1,7 +1,7 @@
-import bcrypt from 'bcrypt';
-import { StatusCodes } from 'http-status-codes';
-import { CLIENT_URL, FROM_EMAIL, SECRET_KEY } from '../../config/index.js';
-import jwt from 'jsonwebtoken';
+import bcrypt from "bcrypt";
+import { StatusCodes } from "http-status-codes";
+import { CLIENT_URL, FROM_EMAIL, SECRET_KEY } from "../../config/index.js";
+import jwt from "jsonwebtoken";
 
 import {
   asyncErrorHandler,
@@ -9,8 +9,8 @@ import {
   generateOtp,
   sendMail,
   sendSuccessResponse,
-} from '../../utils/index.js';
-import { User } from '../user/user.js';
+} from "../../utils/index.js";
+import { User } from "../user/user.js";
 
 const sendUserVerificationEmail = async (name, email, otp) => {
   if (!otp || !name || !email) return;
@@ -29,7 +29,7 @@ const sendUserVerificationEmail = async (name, email, otp) => {
   await sendMail({
     from: FROM_EMAIL,
     to: email,
-    subject: 'Email Verification Request',
+    subject: "Email Verification Request",
     html: htmlBody,
   });
 };
@@ -40,7 +40,7 @@ export const signUp = asyncErrorHandler(async (req, res) => {
 
   if (!name || !email || !address || !phoneNum || !password) {
     createError({
-      message: 'All fields are required',
+      message: "All fields are required",
       statusCode: StatusCodes.BAD_REQUEST,
     });
     return;
@@ -52,7 +52,7 @@ export const signUp = asyncErrorHandler(async (req, res) => {
 
   if (isUserExist) {
     createError({
-      message: 'User already exists with this email',
+      message: "User already exists with this email",
       statusCode: StatusCodes.BAD_REQUEST,
     });
     return;
@@ -73,7 +73,7 @@ export const signUp = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({
     res,
     statusCode: StatusCodes.CREATED,
-    message: 'User created successfully',
+    message: "User created successfully",
   });
 });
 
@@ -82,7 +82,7 @@ export const signIn = asyncErrorHandler(async (req, res) => {
 
   if (!email || !password) {
     return createError({
-      message: 'Email and password are required',
+      message: "Email and password are required",
       statusCode: StatusCodes.BAD_REQUEST,
     });
   }
@@ -91,7 +91,7 @@ export const signIn = asyncErrorHandler(async (req, res) => {
 
   if (!user) {
     return createError({
-      message: 'User not found',
+      message: "User not found",
       statusCode: StatusCodes.NOT_FOUND,
     });
   }
@@ -100,7 +100,7 @@ export const signIn = asyncErrorHandler(async (req, res) => {
 
   if (!isPasswordCorrect) {
     return createError({
-      message: 'Incorrect email or password',
+      message: "Incorrect email or password",
       statusCode: StatusCodes.UNAUTHORIZED,
     });
   }
@@ -113,7 +113,7 @@ export const signIn = asyncErrorHandler(async (req, res) => {
       return sendSuccessResponse({
         res,
         data: { user },
-        message: 'OTP already sent. Please check your email.',
+        message: "OTP already sent. Please check your email.",
       });
     }
 
@@ -129,15 +129,15 @@ export const signIn = asyncErrorHandler(async (req, res) => {
         res,
         data: { user },
         message: !otp
-          ? 'New OTP has been sent for verification'
-          : 'OTP Expired, New OTP has been sent to your email.',
+          ? "New OTP has been sent for verification"
+          : "OTP Expired, New OTP has been sent to your email.",
       });
     }
 
     // OTP entered but invalid
     if (user.otp.code !== otp) {
       return createError({
-        message: 'Invalid OTP. Please try again.',
+        message: "Invalid OTP. Please try again.",
         statusCode: StatusCodes.UNAUTHORIZED,
       });
     }
@@ -156,7 +156,7 @@ export const signIn = asyncErrorHandler(async (req, res) => {
   return sendSuccessResponse({
     res,
     data: { token, user },
-    message: 'Successfully logged in',
+    message: "Successfully logged in",
   });
 });
 
@@ -167,7 +167,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res) => {
   if (!email) {
     createError({
       statusCode: StatusCodes.BAD_REQUEST,
-      message: 'Email is required',
+      message: "Email is required",
     });
     return;
   }
@@ -177,7 +177,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res) => {
   if (!user) {
     createError({
       statusCode: StatusCodes.NOT_FOUND,
-      message: 'User does not exist with this email',
+      message: "User does not exist with this email",
     });
     return;
   }
@@ -205,13 +205,13 @@ export const forgotPassword = asyncErrorHandler(async (req, res) => {
   await sendMail({
     from: FROM_EMAIL,
     to: user.email,
-    subject: 'Reset Password Request',
+    subject: "Reset Password Request",
     html: htmlBody,
   });
 
   sendSuccessResponse({
     res,
-    message: 'Please check your email for the password reset link.',
+    message: "Please check your email for the password reset link.",
   });
 });
 
@@ -223,7 +223,7 @@ export const resetPassword = asyncErrorHandler(async (req, res) => {
   if (!password) {
     createError({
       statusCode: StatusCodes.BAD_REQUEST,
-      message: 'Password is required',
+      message: "Password is required",
     });
     return;
   }
@@ -233,7 +233,7 @@ export const resetPassword = asyncErrorHandler(async (req, res) => {
   if (!user) {
     createError({
       statusCode: StatusCodes.BAD_REQUEST,
-      message: 'User not found',
+      message: "User not found",
     });
     return;
   }
@@ -245,7 +245,7 @@ export const resetPassword = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({
     res,
     statusCode: StatusCodes.OK,
-    message: 'Your password has been changed successfully.',
+    message: "Your password has been changed successfully.",
   });
 });
 
@@ -256,7 +256,7 @@ export const changePassword = asyncErrorHandler(async (req, res) => {
   if (!newPassword | !oldPassword) {
     createError({
       statusCode: StatusCodes.BAD_REQUEST,
-      message: 'Password is required',
+      message: "Password is required",
     });
     return;
   }
@@ -266,7 +266,7 @@ export const changePassword = asyncErrorHandler(async (req, res) => {
   if (!user) {
     createError({
       statusCode: StatusCodes.BAD_REQUEST,
-      message: 'User not found',
+      message: "User not found",
     });
     return;
   }
@@ -275,7 +275,7 @@ export const changePassword = asyncErrorHandler(async (req, res) => {
 
   if (!isPasswordCorrect) {
     createError({
-      message: 'incorrect current password',
+      message: "incorrect current password",
       statusCode: StatusCodes.BAD_REQUEST,
     });
     return;
@@ -288,7 +288,7 @@ export const changePassword = asyncErrorHandler(async (req, res) => {
   sendSuccessResponse({
     res,
     statusCode: StatusCodes.OK,
-    message: 'Your password has been changed successfully.',
+    message: "Your password has been changed successfully.",
   });
 });
 
@@ -303,14 +303,14 @@ export const verifyUser = asyncErrorHandler(async (req, res) => {
   if (!user) {
     createError({
       statusCode: 400,
-      message: 'Unable to verify user. Please try again later!',
+      message: "Unable to verify user. Please try again later!",
     });
     return;
   }
 
   sendSuccessResponse({
     res,
-    message: 'User verified successfully.',
+    message: "User verified successfully.",
   });
 });
 
@@ -324,7 +324,7 @@ export const resendUserVerificationEmail = asyncErrorHandler(
     if (!user) {
       createError({
         statusCode: StatusCodes.NOT_FOUND,
-        message: 'User not found',
+        message: "User not found",
       });
 
       return;
@@ -333,7 +333,7 @@ export const resendUserVerificationEmail = asyncErrorHandler(
     if (user.isVerified) {
       createError({
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'User already verified.',
+        message: "User already verified.",
       });
 
       return;
@@ -344,8 +344,7 @@ export const resendUserVerificationEmail = asyncErrorHandler(
     sendSuccessResponse({
       res,
       message:
-        'User verification mail sent successfully. Please check you email.',
+        "User verification mail sent successfully. Please check you email.",
     });
-  }
+  },
 );
-

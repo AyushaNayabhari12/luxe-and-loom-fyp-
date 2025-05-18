@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { getRequest } from '../utils/apiHandler';
+import { useQuery } from "@tanstack/react-query";
+import { getRequest } from "../utils/apiHandler";
 
-export const useFetchProductById = id => {
+export const useFetchProductById = (id) => {
   return useQuery({
-    queryKey: ['PRODUCT_BY_ID', id],
+    queryKey: ["PRODUCT_BY_ID", id],
     queryFn: async () => {
       try {
         const res = await getRequest({
@@ -19,12 +19,12 @@ export const useFetchProductById = id => {
   });
 };
 
-export const useFetchSimilarProducts = product => {
+export const useFetchSimilarProducts = (product) => {
   return useQuery({
-    queryKey: ['Similar Products', product?.id, product?.category],
+    queryKey: ["Similar Products", product?.id, product?.category],
     queryFn: async () => {
       try {
-        const category = product.category ?? '';
+        const category = product.category ?? "";
 
         const res = await getRequest({
           endpoint: `/recommendations?category=${category}`,
@@ -38,5 +38,3 @@ export const useFetchSimilarProducts = product => {
     enabled: !!product,
   });
 };
-
-

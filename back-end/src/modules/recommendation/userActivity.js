@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const userActivitySchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   searchQueries: [
@@ -16,7 +16,7 @@ const userActivitySchema = new mongoose.Schema({
     {
       productId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
+        ref: "Product",
       },
       viewedAt: { type: Date, default: Date.now },
     },
@@ -25,12 +25,11 @@ const userActivitySchema = new mongoose.Schema({
     {
       order: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Order',
+        ref: "Order",
       },
       purchasedAt: { type: Date, default: Date.now },
     },
   ],
 });
 
-export const UserActivity = mongoose.model('UserActivity', userActivitySchema);
-
+export const UserActivity = mongoose.model("UserActivity", userActivitySchema);

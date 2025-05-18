@@ -1,8 +1,8 @@
-import natural from 'natural';
+import natural from "natural";
 const { WordTokenizer } = natural;
 
-import tf from '@tensorflow/tfjs-node';
-import { UserActivity } from './userActivity.js';
+import tf from "@tensorflow/tfjs-node";
+import { UserActivity } from "./userActivity.js";
 
 const tokenizer = new WordTokenizer();
 
@@ -13,13 +13,13 @@ export async function generateTextEmbedding(text) {
   tokens.forEach((token, i) => {
     embedding[i % 128] += token.charCodeAt(0);
   });
-  return embedding.map(v => v / Math.max(1, Math.max(...embedding)));
+  return embedding.map((v) => v / Math.max(1, Math.max(...embedding)));
 }
 
 export async function generateUserEmbedding(userId) {
   const activity = await UserActivity.findOne({ user: userId })
-    .populate('productViews.productId')
-    .populate('previousOrders.order');
+    .populate("productViews.productId")
+    .populate("previousOrders.order");
 
   if (!activity) return Array(128).fill(0); // Default empty embedding
 
@@ -27,7 +27,7 @@ export async function generateUserEmbedding(userId) {
   let totalWeight = 0;
 
   // Weight views (less important)
-  activity.productViews.forEach(view => {
+  activity.productViews.forEach((view) => {
     if (view.productId && view.productId.embedding.length === 128) {
       const recencyWeight =
         1 / (1 + (Date.now() - view.viewedAt) / (1000 * 60 * 60 * 24)); // Decay over days
@@ -40,12 +40,12 @@ export async function generateUserEmbedding(userId) {
   });
 
   // Weight purchases (more important)
-  activity.previousOrders.forEach(order => {
+  activity.previousOrders.forEach((order) => {
     if (order.order && order.order.products) {
       const recencyWeight =
         1 / (1 + (Date.now() - order.purchasedAt) / (1000 * 60 * 60 * 24));
       const weight = 3 * recencyWeight; // Purchases have higher base weight
-      order.order.products.forEach(product => {
+      order.order.products.forEach((product) => {
         if (product.embedding && product.embedding.length === 128) {
           product.embedding.forEach((val, i) => {
             embedding[i] += val * weight;
@@ -58,18 +58,17 @@ export async function generateUserEmbedding(userId) {
 
   // Normalize embedding
   if (totalWeight > 0) {
-    embedding = embedding.map(val => val / totalWeight);
+    embedding = embedding.map((val) => val / totalWeight);
   }
 
   // Incorporate search queries (optional)
-  const queryText = activity.searchQueries.map(q => q.query).join(' ');
+  const queryText = activity.searchQueries.map((q) => q.query).join(" ");
   if (queryText) {
     const queryEmbedding = await generateTextEmbedding(queryText);
     embedding = embedding.map(
-      (val, i) => (val + queryEmbedding[i] * 0.2) / 1.2
+      (val, i) => (val + queryEmbedding[i] * 0.2) / 1.2,
     );
   }
 
   return embedding;
 }
-

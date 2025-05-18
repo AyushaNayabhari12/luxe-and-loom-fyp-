@@ -18,7 +18,7 @@ export class ApiFeatures {
     const limit = this.queryString.limit * 1 || 10;
 
     const totalCount = await this.query.model.countDocuments(
-      this.query.getQuery()
+      this.query.getQuery(),
     );
 
     const totalPages = Math.ceil(totalCount / limit);
@@ -31,4 +31,3 @@ export class ApiFeatures {
     };
   }
 }
-

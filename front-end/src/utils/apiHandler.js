@@ -1,6 +1,6 @@
-import axios from 'axios';
-import { getAuthTokenFromCookie } from './cookieHandler.js';
-import { SERVER_URL } from '../config/index.js';
+import axios from "axios";
+import { getAuthTokenFromCookie } from "./cookieHandler.js";
+import { SERVER_URL } from "../config/index.js";
 
 const getAxiosInstance = () => {
   const authToken = getAuthTokenFromCookie();
@@ -62,4 +62,3 @@ export const deleteRequest = async ({ endpoint, data }) => {
     throw new Error(error.message);
   }
 };
-

@@ -1,13 +1,13 @@
-import { createContext, useEffect, useState } from 'react';
-import { getRequest } from '../utils/apiHandler.js';
-import { getAuthTokenFromCookie, removeCookie } from '../utils/cookieHandler';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router';
+import { createContext, useEffect, useState } from "react";
+import { getRequest } from "../utils/apiHandler.js";
+import { getAuthTokenFromCookie, removeCookie } from "../utils/cookieHandler";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 export const AuthContext = createContext({
   currentUser: {},
   setCurrentUser: () => null,
-  authToken: '',
+  authToken: "",
   setAuthToken: () => null,
 });
 
@@ -28,7 +28,7 @@ export const AuthContextProvider = ({ children }) => {
       setIsLoading(true);
 
       const res = await getRequest({
-        endpoint: '/users/me',
+        endpoint: "/users/me",
       });
 
       setIsLoading(false);
@@ -49,9 +49,9 @@ export const AuthContextProvider = ({ children }) => {
   const logOut = () => {
     removeCookie();
     setCurrentUser(null);
-    setAuthToken('');
-    toast.success('Logged out successfully');
-    navigate('/sign-in');
+    setAuthToken("");
+    toast.success("Logged out successfully");
+    navigate("/sign-in");
   };
 
   const value = {
@@ -65,4 +65,3 @@ export const AuthContextProvider = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
