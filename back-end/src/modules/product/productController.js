@@ -140,7 +140,7 @@ export const getProductById = asyncErrorHandler(async (req, res) => {
 // PUT /products/:id
 export const updateProductById = asyncErrorHandler(async (req, res) => {
   const { id } = req.params;
-  const {
+  let {
     name,
     description,
     basePrice,
@@ -191,7 +191,16 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
   await product.save();
 
   if (deletedImages && deletedImages?.length) {
-    deletedImages?.forEach(deleteFile);
+    
+    if(typeof deletedImages === "string") {
+      deletedImages = [deletedImages];
+    }
+
+    deletedImages.forEach((image) => {
+      const imagePath = `uploads/${image}`;
+      deleteFile(imagePath);
+    });
+
   }
 
   sendSuccessResponse({
