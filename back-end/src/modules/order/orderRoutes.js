@@ -20,7 +20,10 @@ orderRouter.use(authenticateToken);
 
 orderRouter.route("/").get(getAllOrders);
 
-orderRouter.route("/cart").post(upload.single("file"), addToCart).get(getCart);
+orderRouter
+  .route("/cart")
+  .post(upload.single("customizedImage"), addToCart)
+  .get(getCart);
 
 orderRouter
   .route("/buy-now")

@@ -1,13 +1,15 @@
 import { StatusCodes } from "http-status-codes";
-import { sendSuccessResponse } from "../../utils/index.js";
-import { asyncErrorHandler } from "../../utils/index.js";
-import { createError } from "../../utils/index.js";
+import {
+  asyncErrorHandler,
+  createError,
+  deleteFile,
+  sendSuccessResponse,
+} from "../../utils/index.js";
 import { Product } from "../product/product.js";
 import { Order } from "./Order.js";
 import { sendMail } from "../../utils/mail.js";
 import { FROM_EMAIL } from "../../config/index.js";
 import { logOrder } from "../recommendation/utils.js";
-import { deleteFile } from "../../utils/index.js";
 import { User } from "../user/user.js";
 
 // GET /orders/cart
@@ -38,9 +40,22 @@ export const getCart = asyncErrorHandler(async (req, res) => {
 // POST /orders/cart
 export const addToCart = asyncErrorHandler(async (req, res) => {
   const userId = req.userId;
+  const customizedImage = req?.file?.filename;
   const { productId, quantity, size, color } = req.body;
 
-  if (!quantity || !size || !productId || !color) {
+  if (!quantity || !size) {
+    deleteFile(customizedImage);
+
+    return createError({
+      res,
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: "All fields are required",
+    });
+  }
+
+  if (!customizedImage && (!productId || !color)) {
+    deleteFile(customizedImage);
+
     return createError({
       res,
       statusCode: StatusCodes.BAD_REQUEST,
@@ -63,6 +78,9 @@ export const addToCart = asyncErrorHandler(async (req, res) => {
         item.size === size &&
         item.color === color
       );
+    } else if (customizedImage) {
+      // For customized product (based on image matching)
+      return item.customizedImage === customizedImage && item.size === size;
     }
     return false;
   });
@@ -76,7 +94,13 @@ export const addToCart = asyncErrorHandler(async (req, res) => {
       color,
     };
 
-    newItem.product = productId;
+    if (productId) {
+      newItem.product = productId;
+    } else if (customizedImage) {
+      newItem.price = 1200;
+      newItem.customizedImage = customizedImage;
+    }
+
     cart.orderItems.push(newItem);
   }
 

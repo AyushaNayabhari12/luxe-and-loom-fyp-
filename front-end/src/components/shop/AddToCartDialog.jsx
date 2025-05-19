@@ -11,10 +11,15 @@ import {
 } from "@material-tailwind/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { postRequest } from "../../utils/apiHandler.js";
-import { COLORS, SIZES } from "../../config/index.js";
+import { postRequest } from "../../utils/apiHandler";
+import { COLORS, SIZES } from "../../config";
+import { base64ToFile } from "../../utils/index.js";
 
-const AddToCartDialog = ({ product = {} }) => {
+const AddToCartDialog = ({
+  product = {},
+  isCustomization,
+  convertCanvasToImage,
+}) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cartDetails, setCartDetails] = useState({
@@ -55,13 +60,22 @@ const AddToCartDialog = ({ product = {} }) => {
         return;
       }
 
-      if (!cartDetails.color) {
+      if (!isCustomization && !cartDetails.color) {
         toast.error("Please select a color.");
         return;
       }
 
-      if (cartDetails.quantity > product.stock) {
+      if (!isCustomization && cartDetails.quantity > product.stock) {
         toast.error("Entered quantity exceeds available stock.");
+        return;
+      }
+
+      const customizedImage = isCustomization
+        ? base64ToFile(convertCanvasToImage())
+        : "";
+
+      if (isCustomization && !customizedImage) {
+        toast.error("Please add a design to your product.");
         return;
       }
 
@@ -73,6 +87,7 @@ const AddToCartDialog = ({ product = {} }) => {
       formData.append("size", cartDetails.size);
       formData.append("color", cartDetails.color);
       formData.append("quantity", cartDetails.quantity);
+      formData.append("customizedImage", customizedImage);
 
       const res = await postRequest({
         endpoint: "/orders/cart",
@@ -130,26 +145,28 @@ const AddToCartDialog = ({ product = {} }) => {
           </div>
 
           {/* Color */}
-          <div className="flex gap-x-5 mt-4">
-            <div>
-              <div className="grid grid-cols-9 gap-6">
-                {colors?.map((color, index) => (
-                  <Tooltip key={index} content={color} placement="top">
-                    <div
-                      className={`w-10  h-10 rounded border cursor-pointer ${
-                        cartDetails.color === color ? "ring-2 ring-black" : ""
-                      }`}
-                      title={color}
-                      onClick={() => handleColorToggle(color)}
-                      style={{
-                        backgroundColor: color.toLowerCase(),
-                      }}
-                    ></div>
-                  </Tooltip>
-                ))}
+          {!isCustomization && (
+            <div className="flex gap-x-5 mt-4">
+              <div>
+                <div className="grid grid-cols-9 gap-6">
+                  {colors?.map((color, index) => (
+                    <Tooltip key={index} content={color} placement="top">
+                      <div
+                        className={`w-10  h-10 rounded border cursor-pointer ${
+                          cartDetails.color === color ? "ring-2 ring-black" : ""
+                        }`}
+                        title={color}
+                        onClick={() => handleColorToggle(color)}
+                        style={{
+                          backgroundColor: color.toLowerCase(),
+                        }}
+                      ></div>
+                    </Tooltip>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </DialogBody>
 
         <DialogFooter className="flex gap-3">

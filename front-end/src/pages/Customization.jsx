@@ -18,6 +18,7 @@ import { useNavigate } from "react-router";
 import useAuthContext from "../hooks/useAuthContext.js";
 import { v4 as uuid } from "uuid";
 import { SIZES } from "../config/index.js";
+import AddToCartDialog from "../components/shop/AddToCartDialog.jsx";
 
 const patterns = ["/pattern1.webp"];
 
@@ -89,13 +90,6 @@ const ShawlCustomizer = () => {
 
     if (!size || quantity < 1) {
       toast.error("Please select size,and valid quantity.");
-      return;
-    }
-
-    const customizedImage = base64ToFile(convertCanvasToImage());
-
-    if (!customizedImage) {
-      toast.error("Please add a design to your product.");
       return;
     }
 
@@ -340,6 +334,11 @@ const ShawlCustomizer = () => {
             <Button onClick={toggleOpen} color="green">
               Buy Now
             </Button>
+
+            <AddToCartDialog
+              isCustomization
+              convertCanvasToImage={convertCanvasToImage}
+            />
           </div>
         </div>
       </div>
