@@ -152,6 +152,14 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
     colors,
   } = req.body;
 
+  // Ensure images and deletedImages are always arrays
+  if (typeof images === "string") {
+    images = [images];
+  }
+  if (typeof deletedImages === "string") {
+    deletedImages = [deletedImages];
+  }
+
   const newImages = req.files?.map((file) => file.filename) || [];
 
   const finalImages = [...newImages, ...images];
@@ -191,16 +199,10 @@ export const updateProductById = asyncErrorHandler(async (req, res) => {
   await product.save();
 
   if (deletedImages && deletedImages?.length) {
-    
-    if(typeof deletedImages === "string") {
-      deletedImages = [deletedImages];
-    }
-
     deletedImages.forEach((image) => {
       const imagePath = `uploads/${image}`;
       deleteFile(imagePath);
     });
-
   }
 
   sendSuccessResponse({
