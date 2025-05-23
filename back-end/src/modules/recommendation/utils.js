@@ -15,7 +15,7 @@ export async function logProductView(userId, productId) {
 
   await UserActivity.findOneAndUpdate(
     { user: userId },
-    { $push: { productViews: { productId } } },
+    { $push: { productViews: { productId, viewedAt: new Date() } } },
     { upsert: true, new: true },
   );
 }
@@ -25,7 +25,7 @@ export async function logOrder(userId, orderId) {
 
   await UserActivity.findOneAndUpdate(
     { user: userId },
-    { $push: { previousOrders: { orderId } } },
+    { $push: { previousOrders: { order: orderId, purchasedAt: new Date() } } },
     { upsert: true, new: true },
   );
 }

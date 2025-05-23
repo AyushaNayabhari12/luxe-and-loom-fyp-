@@ -1,5 +1,6 @@
 import { Product } from '../product/product.js';
 import { generateUserEmbedding } from './vectorEmbeddings.js';
+import { UserActivity } from './userActivity.js';
 
 function cosineSimilarity(vecA, vecB) {
   const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
@@ -8,20 +9,20 @@ function cosineSimilarity(vecA, vecB) {
   return magnitudeA && magnitudeB ? dotProduct / (magnitudeA * magnitudeB) : 0;
 }
 
-export async function getRecommendations(userId, limit = 4) {
+export async function getRecommendations(userId, limit = 4, category) {
   const userEmbedding = await generateUserEmbedding(userId);
-  const products = await Product.find({
-    embedding: { $ne: [] },
-    isDeleted: false,
-  });
+  // Exclude products the user has already viewed
+  const activity = await UserActivity.findOne({ user: userId });
+  const viewedIds = activity?.productViews.map(v => v.productId) || [];
+  const query = { embedding: { $ne: [] }, isDeleted: false, _id: { $nin: viewedIds } };
+  if (category) query.category = category;
+  const products = await Product.find(query);
 
   const recommendations = products
     .map(product => {
       return {
         product,
-        similarity: Math.ceil(
-          cosineSimilarity(userEmbedding, product.embedding)
-        ),
+        similarity: cosineSimilarity(userEmbedding, product.embedding),
       };
     })
     .filter(rec => rec.similarity > 0)

@@ -6,7 +6,7 @@ export async function getRecommendedProducts(req, res) {
   const userId = req.userId;
   const { category } = req.query;
 
-  let recommendations = await getRecommendations(userId);
+  let recommendations = await getRecommendations(userId, 4, category);
 
   if (!recommendations || recommendations.length === 0) {
     recommendations = await Product.find({ category }).limit(4);
