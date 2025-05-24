@@ -9,7 +9,7 @@ export async function getRecommendedProducts(req, res) {
   let recommendations = await getRecommendations(userId, 4, category);
 
   if (!recommendations || recommendations.length === 0) {
-    recommendations = await Product.find({ category }).limit(4);
+    recommendations = await Product.find({ category, isDeleted: false }).limit(4);
   }
 
   sendSuccessResponse({

@@ -11,7 +11,7 @@ export const useFetchProductById = (id) => {
         });
 
         return res?.data || [];
-      } catch (error) {
+      } catch {
         return [];
       }
     },
@@ -30,8 +30,9 @@ export const useFetchSimilarProducts = (product) => {
           endpoint: `/recommendations?category=${category}`,
         });
 
-        return res?.data || [];
-      } catch (error) {
+        // Remove any soft-deleted products just in case
+        return (res?.data || []).filter((p) => !p.isDeleted);
+      } catch {
         return [];
       }
     },
