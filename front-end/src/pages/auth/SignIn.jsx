@@ -81,7 +81,7 @@ export function SignIn() {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Sign in to your Shwal Shops account"
+      subtitle="Sign in to your Shawl Shops account"
     >
       <form className="space-y-6" onSubmit={handleSubmit}>
         {error && (

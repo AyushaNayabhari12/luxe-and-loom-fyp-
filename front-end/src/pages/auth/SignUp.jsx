@@ -63,7 +63,7 @@ export function SignUp() {
   return (
     <AuthLayout
       title="Create your account"
-      subtitle="Join Shwal Shops today"
+      subtitle="Join Shawl Shops today"
       isSignUp
     >
       <form className="space-y-6" onSubmit={handleSubmit}>
