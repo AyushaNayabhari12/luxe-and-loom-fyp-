@@ -1,7 +1,6 @@
 import natural from "natural";
 const { WordTokenizer } = natural;
 
-import tf from "@tensorflow/tfjs-node";
 import { UserActivity } from "./userActivity.js";
 
 const tokenizer = new WordTokenizer();
@@ -19,7 +18,10 @@ export async function generateTextEmbedding(text) {
 export async function generateUserEmbedding(userId) {
   const activity = await UserActivity.findOne({ user: userId })
     .populate("productViews.productId")
-    .populate("previousOrders.order");
+    .populate({
+      path: "previousOrders.order",
+      populate: { path: "orderItems.product" }
+    });
 
   if (!activity) return Array(128).fill(0); // Default empty embedding
 
@@ -40,14 +42,15 @@ export async function generateUserEmbedding(userId) {
   });
 
   // Weight purchases (more important)
-  activity.previousOrders.forEach((order) => {
-    if (order.order && order.order.products) {
+  activity.previousOrders.forEach(({ order, purchasedAt }) => {
+    if (order && order.orderItems) {
       const recencyWeight =
-        1 / (1 + (Date.now() - order.purchasedAt) / (1000 * 60 * 60 * 24));
+        1 / (1 + (Date.now() - purchasedAt) / (1000 * 60 * 60 * 24));
       const weight = 3 * recencyWeight; // Purchases have higher base weight
-      order.order.products.forEach((product) => {
-        if (product.embedding && product.embedding.length === 128) {
-          product.embedding.forEach((val, i) => {
+      order.orderItems.forEach((item) => {
+        const prod = item.product;
+        if (prod && prod.embedding && prod.embedding.length === 128) {
+          prod.embedding.forEach((val, i) => {
             embedding[i] += val * weight;
           });
           totalWeight += weight;

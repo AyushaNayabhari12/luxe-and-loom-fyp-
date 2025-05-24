@@ -1,11 +1,16 @@
-import { sendSuccessResponse } from "../../utils/apiResponseHandler.js";
+import { asyncErrorHandler, sendSuccessResponse } from "../../utils/index.js";
 import { Product } from "../product/product.js";
 import { getRecommendations } from "./recommendation.js";
 import { Order } from "../order/order.js";
+import { UserActivity } from "./userActivity.js";
 
-export async function getRecommendedProducts(req, res) {
+export const getRecommendedProducts = asyncErrorHandler(async (req, res) => {
   const userId = req.userId;
   const { category, currentProduct } = req.query;
+
+  // Fetch user's previously viewed products for exclusion
+  const activity = await UserActivity.findOne({ user: userId }).select('productViews.productId');
+  const viewedIds = activity?.productViews.map(v => v.productId.toString()) || [];
 
   // Exclude products the user has already ordered
   const orders = await Order.find({ user: userId, status: 'checkout' }).select('orderItems.product');
@@ -26,12 +31,13 @@ export async function getRecommendedProducts(req, res) {
     );
   }
 
-  // Fallback to simple category match, excluding current and deleted products
+  // Fallback to simple category match, excluding current, viewed, and purchased products
   if (!recommendations || recommendations.length === 0) {
     const fallbackQuery = { category, isDeleted: false };
     const exclusionIds = [];
     if (currentProduct) exclusionIds.push(currentProduct.toString());
     if (purchasedIds.length) exclusionIds.push(...purchasedIds);
+    if (viewedIds.length) exclusionIds.push(...viewedIds);
     if (exclusionIds.length) {
       fallbackQuery._id = { $nin: exclusionIds };
     }
@@ -43,4 +49,4 @@ export async function getRecommendedProducts(req, res) {
     message: "Recommendations fetched successfully",
     data: recommendations,
   });
-}
+});
