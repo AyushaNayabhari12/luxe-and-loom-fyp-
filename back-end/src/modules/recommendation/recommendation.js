@@ -1,6 +1,7 @@
 import { Product } from '../product/product.js';
 import { generateUserEmbedding } from './vectorEmbeddings.js';
 import { UserActivity } from './userActivity.js';
+import { Order } from '../order/order.js';
 
 function cosineSimilarity(vecA, vecB) {
   const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
@@ -14,7 +15,14 @@ export async function getRecommendations(userId, limit = 4, category) {
   // Exclude products the user has already viewed
   const activity = await UserActivity.findOne({ user: userId });
   const viewedIds = activity?.productViews.map(v => v.productId) || [];
-  const query = { embedding: { $ne: [] }, isDeleted: false, _id: { $nin: viewedIds } };
+  // Exclude products the user has already ordered
+  const orders = await Order.find({ user: userId, status: 'checkout' }).select('orderItems.product');
+  const orderedIds = orders.flatMap(o => o.orderItems.map(item => item.product));
+
+  // Combine viewed and ordered exclusions
+  const exclusionIds = [...viewedIds];
+  if (orderedIds.length) exclusionIds.push(...orderedIds);
+  const query = { embedding: { $ne: [] }, isDeleted: false, _id: { $nin: exclusionIds } };
   if (category) query.category = category;
   const products = await Product.find(query);
 

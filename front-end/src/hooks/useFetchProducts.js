@@ -25,13 +25,17 @@ export const useFetchSimilarProducts = (product) => {
     queryFn: async () => {
       try {
         const category = product.category ?? "";
+        const currentProduct = product._id || product.id || "";
 
+        // Fetch recommendations, excluding already viewed and soft-deleted server-side
         const res = await getRequest({
-          endpoint: `/recommendations?category=${category}`,
+          endpoint: `/recommendations?category=${category}&currentProduct=${currentProduct}`,
         });
 
-        // Remove any soft-deleted products just in case
-        return (res?.data || []).filter((p) => !p.isDeleted);
+        // As safety, filter out any deleted or current items client-side
+        return (res?.data || []).filter(
+          (p) => !p.isDeleted && p._id !== currentProduct
+        );
       } catch {
         return [];
       }
